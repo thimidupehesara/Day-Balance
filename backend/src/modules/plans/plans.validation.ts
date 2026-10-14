@@ -7,39 +7,33 @@ export const planItemSchema = z.object({
   plannedSeconds: z
     .number()
     .int()
-    .min(0, 'plannedSeconds must be non-negative'),
+    .min(0, 'plannedSeconds must be non-negative')
+    .refine(
+      (val) => val % 1800 === 0,
+      'Planned seconds must be multiples of 30 minutes (1800 seconds)',
+    ),
 });
 
-export const createPlanSchema = z
-  .object({
-    planDate: z
-      .string()
-      .regex(dateRegex, 'planDate must be in YYYY-MM-DD format'),
-    wakingSeconds: z
-      .number()
-      .int()
-      .min(0, 'wakingSeconds must be non-negative'),
-    items: z
-      .array(planItemSchema)
-      .min(1, 'At least one plan item must be provided'),
-  })
-  .refine(
-    (data) => {
-      const totalPlanned = data.items.reduce(
-        (sum, item) => sum + item.plannedSeconds,
-        0,
-      );
-      return totalPlanned <= data.wakingSeconds;
-    },
-    {
-      message: 'Total planned time cannot exceed waking hours',
-      path: ['items'],
-    },
-  );
+export const createPlanSchema = z.object({
+  planDate: z
+    .string()
+    .regex(dateRegex, 'planDate must be in YYYY-MM-DD format'),
+  wakingSeconds: z
+    .number()
+    .int()
+    .min(0, 'wakingSeconds must be non-negative')
+    .optional(),
+  items: z
+    .array(planItemSchema)
+    .min(1, 'At least one plan item must be provided'),
+});
 
 export const updatePlanSchema = z.object({
   wakingSeconds: z.number().int().min(0).optional(),
-  items: z.array(planItemSchema).min(1).optional(),
+  items: z
+    .array(planItemSchema)
+    .min(1, 'At least one plan item must be provided')
+    .optional(),
 });
 
 export const planDateQuerySchema = z.object({
@@ -52,3 +46,4 @@ export const planDateQuerySchema = z.object({
 export type PlanItemInput = z.infer<typeof planItemSchema>;
 export type CreatePlanInput = z.infer<typeof createPlanSchema>;
 export type UpdatePlanInput = z.infer<typeof updatePlanSchema>;
+export type PlanDateQueryInput = z.infer<typeof planDateQuerySchema>;

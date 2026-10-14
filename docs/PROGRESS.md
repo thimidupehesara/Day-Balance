@@ -27,8 +27,8 @@
 | [Auth Module](backend/auth.md) | DONE | Register, login, logout, refresh, delete account | Verified live with real backend HTTP requests and Neon DB |
 | [Users Module](backend/users.md) | DONE | Profile, onboarding fields (wakeTime, bedtime, routineMinutes, onboardingDone) | Verified live with `test-onboarding-flow.ts` against Neon DB |
 | [Categories Module](backend/categories.md) | DONE | List categories, user selection (`/api/categories/mine`) | Verified live with `test-onboarding-flow.ts` against Neon DB |
-| [Plans Module](backend/plans.md) | DRAFT | Daily plans, plan items CRUD | Endpoints written and compile, not tested end-to-end |
-| [Timer Module](backend/timer.md) | DRAFT | Start/pause/resume, time entries, timer math | Endpoints written and compile, not tested end-to-end |
+| [Plans Module](backend/plans.md) | DONE | Daily plans, plan items CRUD, server waking seconds, planned vs actual summary | Verified live with `test-core-flow.ts` against Neon DB |
+| [Timer Module](backend/timer.md) | DONE | Atomic start/auto-pause in transaction, pause/overtime, resume, concurrency locking | Verified live with `test-core-flow.ts` and unit tests against Neon DB |
 
 ## Mobile Screens
 
@@ -73,5 +73,5 @@
 ---
 
 ## Next Steps
-- Verify the core API (`feature/core-api-verify`).
+- Core API verification complete (`feature/core-api-verify`).
 - Build Daily Planning (08) and Today (09).

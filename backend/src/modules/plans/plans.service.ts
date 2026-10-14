@@ -1,7 +1,12 @@
-import { eq, and, asc, notInArray } from 'drizzle-orm';
+import { eq, and, asc, notInArray, inArray } from 'drizzle-orm';
 import { db } from '../../db/connection';
-import { dailyPlans, planItems, categories } from '../../db/schema';
+import { dailyPlans, planItems, categories, users, timeEntries } from '../../db/schema';
 import { CreatePlanInput, UpdatePlanInput } from './plans.validation';
+import {
+  calculateWakingSeconds,
+  calculatePlannedSecondsChange,
+  calculateActualSeconds,
+} from '../../utils/time-calculations';
 
 export interface PlanItemWithCategory {
   id: string;
@@ -23,10 +28,34 @@ export interface PlanDetails {
   wakingSeconds: number;
   createdAt: Date | null;
   items: PlanItemWithCategory[];
+  isExisting?: boolean;
+}
+
+export interface CategorySummary {
+  categoryId: string;
+  categoryName: string;
+  categoryDescription: string;
+  categoryColor: string;
+  categoryIcon: string;
+  plannedSeconds: number;
+  actualSeconds: number;
+  remainingSeconds: number;
+  overtimeSeconds: number;
+  isRunning: boolean;
+  startedAt: Date | null;
+}
+
+export interface PlanSummary {
+  planId: string | null;
+  planDate: string;
+  wakingSeconds: number;
+  totalPlannedSeconds: number;
+  totalActualSeconds: number;
+  categories: CategorySummary[];
 }
 
 export class PlansService {
-  private static async getItemsForPlan(
+  public static async getItemsForPlan(
     planId: string,
   ): Promise<PlanItemWithCategory[]> {
     return db
@@ -52,7 +81,45 @@ export class PlansService {
     userId: string,
     data: CreatePlanInput,
   ): Promise<PlanDetails> {
-    // Check if plan already exists for this date
+    // 1. Compute waking_seconds server-side from user profile
+    const [user] = await db
+      .select({
+        wakeTime: users.wakeTime,
+        bedtime: users.bedtime,
+        routineMinutes: users.routineMinutes,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user) {
+      const err = new Error('User not found');
+      (err as any).statusCode = 404;
+      throw err;
+    }
+
+    const wakingSeconds = calculateWakingSeconds(
+      user.wakeTime,
+      user.bedtime,
+      user.routineMinutes,
+    );
+
+    // 2. Validate total planned time <= waking_seconds
+    const totalPlanned = data.items.reduce(
+      (sum, item) => sum + item.plannedSeconds,
+      0,
+    );
+
+    if (totalPlanned > wakingSeconds) {
+      const err = new Error(
+        `Total planned time (${totalPlanned}s) cannot exceed available waking time (${wakingSeconds}s)`,
+      );
+      (err as any).statusCode = 400;
+      throw err;
+    }
+
+    // 3. Rule 3: Check if plan already exists for this date.
+    // If it already exists, return the existing plan (idempotent creation).
     const [existing] = await db
       .select({ id: dailyPlans.id })
       .from(dailyPlans)
@@ -65,24 +132,24 @@ export class PlansService {
       .limit(1);
 
     if (existing) {
-      const err = new Error(
-        `A plan for ${data.planDate} already exists. Update it instead.`,
-      );
-      (err as any).statusCode = 409;
-      throw err;
+      const existingPlan = await this.getPlanById(userId, existing.id);
+      return {
+        ...existingPlan,
+        isExisting: true,
+      };
     }
 
-    // Insert daily plan
+    // 4. Insert new daily plan
     const [plan] = await db
       .insert(dailyPlans)
       .values({
         userId,
         planDate: data.planDate,
-        wakingSeconds: data.wakingSeconds,
+        wakingSeconds,
       })
       .returning();
 
-    // Insert all plan items
+    // 5. Insert plan items
     if (data.items.length > 0) {
       await db.insert(planItems).values(
         data.items.map((item) => ({
@@ -103,6 +170,7 @@ export class PlansService {
       wakingSeconds: plan.wakingSeconds,
       createdAt: plan.createdAt,
       items,
+      isExisting: false,
     };
   }
 
@@ -175,7 +243,15 @@ export class PlansService {
       throw err;
     }
 
-    const wakingSeconds = data.wakingSeconds ?? existingPlan.wakingSeconds;
+    // Rule 10: Cannot modify a plan from a past day
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (existingPlan.planDate < todayStr) {
+      const err = new Error('Cannot modify a plan from a past date');
+      (err as any).statusCode = 400;
+      throw err;
+    }
+
+    const wakingSeconds = existingPlan.wakingSeconds;
 
     if (data.items) {
       const totalPlanned = data.items.reduce(
@@ -183,7 +259,9 @@ export class PlansService {
         0,
       );
       if (totalPlanned > wakingSeconds) {
-        const err = new Error('Total planned time cannot exceed waking hours');
+        const err = new Error(
+          `Total planned time (${totalPlanned}s) cannot exceed available waking time (${wakingSeconds}s)`,
+        );
         (err as any).statusCode = 400;
         throw err;
       }
@@ -202,15 +280,20 @@ export class PlansService {
         const existingItem = existingMap.get(item.categoryId);
 
         if (existingItem) {
-          const usedSeconds =
-            existingItem.plannedSeconds - existingItem.remainingSeconds;
-          const newRemaining = item.plannedSeconds - usedSeconds;
+          // Rule 6: Editing planned_seconds while a timer runs:
+          // change remaining by the difference (new minus old) and do NOT restart or reset the running timer
+          const newRemaining = calculatePlannedSecondsChange(
+            existingItem.remainingSeconds,
+            existingItem.plannedSeconds,
+            item.plannedSeconds,
+          );
 
           await db
             .update(planItems)
             .set({
               plannedSeconds: item.plannedSeconds,
               remainingSeconds: newRemaining,
+              // startedAt is NOT updated here - running timer continues undisturbed
             })
             .where(eq(planItems.id, existingItem.id));
         } else {
@@ -224,26 +307,148 @@ export class PlansService {
         }
       }
 
-      // Remove items no longer in plan
-      if (updatedCategoryIds.length > 0) {
+      // Check if removing any item with a running timer
+      const itemsToRemove = existingItems.filter(
+        (i) => !updatedCategoryIds.includes(i.categoryId),
+      );
+
+      const runningRemovedItem = itemsToRemove.find((i) => i.startedAt !== null);
+      if (runningRemovedItem) {
+        const err = new Error(
+          'Cannot remove a category with an active running timer. Pause it first.',
+        );
+        (err as any).statusCode = 400;
+        throw err;
+      }
+
+      if (itemsToRemove.length > 0) {
         await db
           .delete(planItems)
           .where(
             and(
               eq(planItems.dailyPlanId, planId),
-              notInArray(planItems.categoryId, updatedCategoryIds),
+              notInArray(
+                planItems.categoryId,
+                updatedCategoryIds,
+              ),
             ),
           );
       }
     }
 
-    if (data.wakingSeconds !== undefined) {
-      await db
-        .update(dailyPlans)
-        .set({ wakingSeconds: data.wakingSeconds })
-        .where(eq(dailyPlans.id, planId));
+    return this.getPlanById(userId, planId);
+  }
+
+  /**
+   * Rule 8: Actual time per category = sum of its time_entries (an open entry counts until now).
+   * Generates summary of planned vs actual per category for a given date.
+   */
+  static async getSummary(
+    userId: string,
+    dateStr: string,
+  ): Promise<PlanSummary> {
+    const now = new Date();
+
+    const [plan] = await db
+      .select()
+      .from(dailyPlans)
+      .where(
+        and(eq(dailyPlans.userId, userId), eq(dailyPlans.planDate, dateStr)),
+      )
+      .limit(1);
+
+    if (!plan) {
+      return {
+        planId: null,
+        planDate: dateStr,
+        wakingSeconds: 0,
+        totalPlannedSeconds: 0,
+        totalActualSeconds: 0,
+        categories: [],
+      };
     }
 
-    return this.getPlanById(userId, planId);
+    const items = await this.getItemsForPlan(plan.id);
+    if (items.length === 0) {
+      return {
+        planId: plan.id,
+        planDate: plan.planDate,
+        wakingSeconds: plan.wakingSeconds,
+        totalPlannedSeconds: 0,
+        totalActualSeconds: 0,
+        categories: [],
+      };
+    }
+
+    const itemIds = items.map((i) => i.id);
+    const entries = await db
+      .select({
+        planItemId: timeEntries.planItemId,
+        startedAt: timeEntries.startedAt,
+        endedAt: timeEntries.endedAt,
+      })
+      .from(timeEntries)
+      .where(
+        and(
+          eq(timeEntries.userId, userId),
+          inArray(timeEntries.planItemId, itemIds),
+        ),
+      );
+
+    const categoriesSummary: CategorySummary[] = items.map((item) => {
+      const itemEntries = entries.filter((e) => e.planItemId === item.id);
+      const actualSeconds = calculateActualSeconds(itemEntries, now);
+      const activeElapsed = item.startedAt
+        ? Math.max(
+            0,
+            Math.floor(
+              (now.getTime() - new Date(item.startedAt).getTime()) / 1000,
+            ),
+          )
+        : 0;
+
+      const currentRemaining = item.remainingSeconds - activeElapsed;
+      const overtimeSeconds = currentRemaining < 0 ? Math.abs(currentRemaining) : 0;
+
+      return {
+        categoryId: item.categoryId,
+        categoryName: item.categoryName,
+        categoryDescription: item.categoryDescription,
+        categoryColor: item.categoryColor,
+        categoryIcon: item.categoryIcon,
+        plannedSeconds: item.plannedSeconds,
+        actualSeconds,
+        remainingSeconds: currentRemaining,
+        overtimeSeconds,
+        isRunning: item.startedAt !== null,
+        startedAt: item.startedAt,
+      };
+    });
+
+    const totalPlannedSeconds = categoriesSummary.reduce(
+      (sum, c) => sum + c.plannedSeconds,
+      0,
+    );
+    const totalActualSeconds = categoriesSummary.reduce(
+      (sum, c) => sum + c.actualSeconds,
+      0,
+    );
+
+    return {
+      planId: plan.id,
+      planDate: plan.planDate,
+      wakingSeconds: plan.wakingSeconds,
+      totalPlannedSeconds,
+      totalActualSeconds,
+      categories: categoriesSummary,
+    };
+  }
+
+  static async getSummaryById(
+    userId: string,
+    planId: string,
+  ): Promise<PlanSummary> {
+    const plan = await this.getPlanById(userId, planId);
+    return this.getSummary(userId, plan.planDate);
   }
 }

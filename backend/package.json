@@ -16,7 +16,9 @@
     "test:neon": "tsx src/scripts/test-neon-services.ts",
     "test:stats": "tsx src/scripts/test-stats-endpoint.ts",
     "test:first-time": "tsx src/scripts/test-first-time-flow.ts",
-    "test": "tsx src/scripts/test-login-flow.ts && tsx src/scripts/test-stats-endpoint.ts && tsx src/scripts/test-first-time-flow.ts",
+    "test:timer-math": "tsx --test src/tests/timer-math.test.ts",
+    "test:core-flow": "tsx src/scripts/test-core-flow.ts",
+    "test": "tsx --test src/tests/timer-math.test.ts && tsx src/scripts/test-login-flow.ts && tsx src/scripts/test-stats-endpoint.ts && tsx src/scripts/test-first-time-flow.ts && tsx src/scripts/test-core-flow.ts",
     "lint": "tsc --noEmit"
   },
   "keywords": [],
