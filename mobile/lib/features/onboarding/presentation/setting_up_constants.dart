@@ -34,6 +34,7 @@ class SettingUpTexts {
       'Check your connection and try again. Your chosen schedule and categories are safe.';
   static const String tryAgainButton = 'Try again';
   static const String backButton = 'Back';
+  static const String continueButton = 'Continue';
 
   /// Generates the complete, ordered text sequence for the loading screen.
   static List<String> buildTextSequence({

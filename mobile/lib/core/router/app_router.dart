@@ -9,6 +9,7 @@ import '../../features/onboarding/presentation/onboarding_result_screen.dart';
 import '../../features/onboarding/presentation/onboarding_categories_screen.dart';
 import '../../features/onboarding/presentation/setting_up_screen.dart';
 import '../../features/planning/presentation/plan_screen.dart';
+import '../../features/timer/presentation/today_screen.dart';
 import 'app_transitions.dart';
 
 // Placeholder screens — will be replaced with real implementations
@@ -108,7 +109,15 @@ final GoRouter appRouter = GoRouter(
       name: 'home',
       pageBuilder: (context, state) => AppTransitions.fadeThrough(
         state: state,
-        child: const _PlaceholderScreen(title: 'Today'),
+        child: const TodayScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/today',
+      name: 'today',
+      pageBuilder: (context, state) => AppTransitions.fadeThrough(
+        state: state,
+        child: const TodayScreen(),
       ),
     ),
     GoRoute(

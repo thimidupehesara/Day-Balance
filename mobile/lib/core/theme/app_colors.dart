@@ -42,6 +42,27 @@ class AppColors {
   static const Color unplanned = Color(0xFFDEDED8); // #DEDED8
   static const Color rest = Color(0xFFE9CFCE); // #E9CFCE
 
+  static Color colorForCategory(String categoryId) {
+    switch (categoryId) {
+      case 'academic':
+        return academic;
+      case 'life_family':
+        return lifeFamily;
+      case 'entertainment':
+        return entertainment;
+      case 'personal_reading':
+        return personalReading;
+      case 'career':
+        return career;
+      case 'unplanned':
+        return unplanned;
+      case 'rest':
+        return rest;
+      default:
+        return unplanned;
+    }
+  }
+
   // Status
   static const Color success = primarySage;
   static const Color warning = Color(0xFFEBD3BC);
