@@ -11,6 +11,7 @@ class PillStepper extends StatelessWidget {
   final VoidCallback onIncrement;
   final bool canDecrement;
   final bool canIncrement;
+  final bool usePlusMinus;
 
   const PillStepper({
     super.key,
@@ -19,10 +20,14 @@ class PillStepper extends StatelessWidget {
     required this.onIncrement,
     this.canDecrement = true,
     this.canIncrement = true,
+    this.usePlusMinus = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final decIcon = usePlusMinus ? AppIcons.remove : AppIcons.chevronLeft;
+    final incIcon = usePlusMinus ? AppIcons.add : AppIcons.chevronRight;
+
     return Container(
       height: 48,
       decoration: BoxDecoration(
@@ -44,7 +49,7 @@ class PillStepper extends StatelessWidget {
                 height: 48,
                 alignment: Alignment.center,
                 child: Icon(
-                  AppIcons.chevronLeft,
+                  decIcon,
                   size: 20,
                   color: canDecrement ? AppColors.text : AppColors.disabled,
                 ),
@@ -77,7 +82,7 @@ class PillStepper extends StatelessWidget {
                 height: 48,
                 alignment: Alignment.center,
                 child: Icon(
-                  AppIcons.chevronRight,
+                  incIcon,
                   size: 20,
                   color: canIncrement ? AppColors.text : AppColors.disabled,
                 ),
