@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,8 @@ import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/category_card.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../planning/domain/plan_model.dart';
+import 'switch_sheet.dart';
 import 'today_controller.dart';
 
 class TodayScreen extends ConsumerStatefulWidget {
@@ -307,10 +310,45 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
           isOvertime: isOvertime,
           overtimeText: overtimeStr,
           usedText: usedStr,
+          onTap: () {
+            context.go('/timer?planItemId=${item.id}');
+          },
           onAction: () {
             if (isRunning) {
               controller.pauseTimer();
             } else {
+              // If another category is currently running, show SwitchSheet
+              if (state.activeItemId != null && state.activeItemId != item.id) {
+                final activeItem = state.items.cast<PlanItemModel?>().firstWhere(
+                      (i) => i?.id == state.activeItemId,
+                      orElse: () => null,
+                    );
+                if (activeItem != null) {
+                  final activeRemainingSec =
+                      state.getRemainingSecondsForItem(activeItem);
+                  final activeRemainingStr = TodayTimerState.formatShort(
+                    math.max(0, activeRemainingSec),
+                  );
+                  final targetRemainingStr = TodayTimerState.formatShort(
+                    math.max(0, remainingSec),
+                  );
+
+                  SwitchSheet.show(
+                    context,
+                    activeCategoryName: activeItem.categoryName,
+                    activeRemainingText: activeRemainingStr,
+                    targetCategoryName: item.categoryName,
+                    targetRemainingText: targetRemainingStr,
+                    targetCategoryColor: color,
+                    targetCategoryIcon:
+                        AppIcons.iconForCategory(item.categoryId),
+                    onConfirm: () {
+                      controller.startTimer(item.id);
+                    },
+                  );
+                  return;
+                }
+              }
               controller.startTimer(item.id);
             }
           },

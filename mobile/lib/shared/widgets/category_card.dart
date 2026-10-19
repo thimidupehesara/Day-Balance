@@ -15,6 +15,7 @@ class CategoryTimerCard extends StatelessWidget {
   final String? overtimeText;
   final String? usedText;
   final VoidCallback onAction;
+  final VoidCallback? onTap;
 
   const CategoryTimerCard({
     super.key,
@@ -28,6 +29,7 @@ class CategoryTimerCard extends StatelessWidget {
     this.overtimeText,
     this.usedText,
     required this.onAction,
+    this.onTap,
   });
 
   @override
@@ -51,7 +53,7 @@ class CategoryTimerCard extends StatelessWidget {
         ? 'Planned $plannedText · $usedText used'
         : 'Planned $plannedText · remaining';
 
-    return Container(
+    final card = Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -154,11 +156,23 @@ class CategoryTimerCard extends StatelessWidget {
         ],
       ),
     );
+
+    if (onTap != null) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: card,
+        ),
+      );
+    }
+    return card;
   }
 
   /// Idle / Paused category card
   Widget _buildIdleCard(BuildContext context) {
-    return Container(
+    final idleCard = Container(
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -252,5 +266,17 @@ class CategoryTimerCard extends StatelessWidget {
         ],
       ),
     );
+
+    if (onTap != null) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: idleCard,
+        ),
+      );
+    }
+    return idleCard;
   }
 }

@@ -18,6 +18,7 @@ class AppColors {
   static const Color paper = Color(0xFFEEE8DC); // #EEE8DC Paper
   static const Color sageContainer = Color(0xFFE0E8DB); // #E0E8DB Sage container
   static const Color divider = Color(0xFFDDDCD2); // #DDDCD2 Divider
+  static const Color timerTrack = Color(0xFFE5E2D9); // #E5E2D9 Circular timer track
   static const Color errorContainer = Color(0xFFF6E2DE); // #F6E2DE Error container
   static const Color white = Color(0xFFFFFFFF); // #FFFFFF White
 

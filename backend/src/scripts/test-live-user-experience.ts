@@ -28,7 +28,7 @@ async function testLiveUserExperience() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, displayName: name }),
     });
-    const regData = await regRes.json();
+    const regData = (await regRes.json()) as any;
     if (!regRes.ok) throw new Error(`Register failed: ${JSON.stringify(regData)}`);
     accessToken = regData.data.tokens.accessToken;
     userId = regData.data.user.id;
@@ -51,7 +51,7 @@ async function testLiveUserExperience() {
         onboardingDone: true,
       }),
     });
-    const profData = await profRes.json();
+    const profData = (await profRes.json()) as any;
     if (!profRes.ok) throw new Error(`Profile update failed: ${JSON.stringify(profData)}`);
     console.log('✓ Profile saved. Gross: 16h, Routines: 1.5h -> Net Waking: 14h 30m');
 
@@ -64,7 +64,7 @@ async function testLiveUserExperience() {
         categoryIds: ['academic', 'life_family', 'entertainment', 'career'],
       }),
     });
-    const catData = await catRes.json();
+    const catData = (await catRes.json()) as any;
     if (!catRes.ok) throw new Error(`Categories update failed: ${JSON.stringify(catData)}`);
     console.log(`✓ Categories saved: ${catData.data.categories.length} categories.`);
 
@@ -74,7 +74,7 @@ async function testLiveUserExperience() {
     const todayBeforeRes = await fetch(`${BASE_URL}/api/plans/today?date=${todayStr}`, {
       headers: authHeaders,
     });
-    const todayBeforeData = await todayBeforeRes.json();
+    const todayBeforeData = (await todayBeforeRes.json()) as any;
     if (todayBeforeData.data.plan === null) {
       console.log('✓ Correct: No plan exists yet for today -> Today displays Before-Planning state.');
     } else {
@@ -97,7 +97,7 @@ async function testLiveUserExperience() {
         ],
       }),
     });
-    const planData = await planRes.json();
+    const planData = (await planRes.json()) as any;
     if (!planRes.ok) throw new Error(`Plan creation failed: ${JSON.stringify(planData)}`);
     planId = planData.data.plan.id;
     const items = planData.data.plan.items;
@@ -113,7 +113,7 @@ async function testLiveUserExperience() {
       headers: authHeaders,
       body: JSON.stringify({ planItemId: academicItemId }),
     });
-    const startAData = await startARes.json();
+    const startAData = (await startARes.json()) as any;
     if (!startARes.ok) throw new Error(`Start A failed: ${JSON.stringify(startAData)}`);
     console.log(`✓ Academic timer started at: ${startAData.data.activeItem.startedAt}`);
 
@@ -127,7 +127,7 @@ async function testLiveUserExperience() {
       headers: authHeaders,
       body: JSON.stringify({ planItemId: careerItemId }),
     });
-    const startBData = await startBRes.json();
+    const startBData = (await startBRes.json()) as any;
     if (!startBRes.ok) throw new Error(`Start B failed: ${JSON.stringify(startBData)}`);
     console.log(`✓ Career timer started. Active Item: ${startBData.data.activeItem.categoryName}`);
 
@@ -135,7 +135,7 @@ async function testLiveUserExperience() {
     const statusMidRes = await fetch(`${BASE_URL}/api/timer/status?date=${todayStr}`, {
       headers: authHeaders,
     });
-    const statusMid = await statusMidRes.json();
+    const statusMid = (await statusMidRes.json()) as any;
     const academicMid = statusMid.data.items.find((i: any) => i.id === academicItemId);
     const careerMid = statusMid.data.items.find((i: any) => i.id === careerItemId);
     console.log(`✓ Verified single running timer invariant:`);
@@ -149,7 +149,7 @@ async function testLiveUserExperience() {
       method: 'POST',
       headers: authHeaders,
     });
-    const pauseData = await pauseRes.json();
+    const pauseData = (await pauseRes.json()) as any;
     if (!pauseRes.ok) throw new Error(`Pause failed: ${JSON.stringify(pauseData)}`);
     console.log(`✓ Career timer paused. Saved remaining = ${pauseData.data.pausedItem.remainingSeconds}s`);
 
@@ -157,7 +157,7 @@ async function testLiveUserExperience() {
     const reopenRes = await fetch(`${BASE_URL}/api/timer/status?date=${todayStr}`, {
       headers: authHeaders,
     });
-    const reopenData = await reopenRes.json();
+    const reopenData = (await reopenRes.json()) as any;
     if (reopenData.data.activeItem === null) {
       console.log('✓ App reopen verified: activeItem is null, saved remaining times accurately persisted.');
     } else {

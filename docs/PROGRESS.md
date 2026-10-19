@@ -44,6 +44,8 @@
 | [Setting Up Screen](screens/setup_loading.md) | DONE | "Setting up your day" loading screen with custom sky animation, honest social proof, and error retry | Built from spec; verified live and with widget tests |
 | [Plan Screen](screens/plan.md) | DONE | Daily planning with 30m steppers, zero hours left, and over-allocated states matching Figma 08 | Verified with widget tests and live API |
 | [Today Screen](screens/today.md) | DONE | Main screen with before-planning, active timers, overtime, and screen 16 offline state matching Figma 09 | Verified with widget tests and live API |
+| [Active Timer](screens/active_timer.md) | DONE | Fullscreen focus timer with circular progress dial, overtime support, and category switcher matching Figma 10 | Verified with widget tests and live router integration |
+| [Switch Sheet](screens/switch_sheet.md) | DONE | Bottom modal sheet confirming switch between active timer and another planned category matching Figma 11 | Verified with widget tests and Today/Active Timer integration |
 | [Summary Screen](screens/summary.md) | PLANNED | End-of-day planned vs actual | Not started |
 | [Settings Screen](screens/settings.md) | PLANNED | User preferences, logout, delete account | Not started |
 
@@ -76,6 +78,7 @@
 ---
 
 ## Next Steps
-- Active Timer screen (10) and Switch sheet (11)
-- Local notifications
 - Edit plan screen (12)
+- End of day summary screen (13)
+- History week screen (14)
+- Settings profile screen (15)
