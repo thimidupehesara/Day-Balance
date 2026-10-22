@@ -6,6 +6,8 @@ import {
   calculateWakingSeconds,
   calculatePlannedSecondsChange,
   calculateActualSeconds,
+  calculateMinimumPlannedSeconds,
+  formatDurationFriendly,
 } from '../../utils/time-calculations';
 
 export interface PlanItemWithCategory {
@@ -268,10 +270,38 @@ export class PlansService {
 
       // Update or insert items
       const existingItems = await db
-        .select()
+        .select({
+          id: planItems.id,
+          dailyPlanId: planItems.dailyPlanId,
+          categoryId: planItems.categoryId,
+          categoryName: categories.name,
+          plannedSeconds: planItems.plannedSeconds,
+          remainingSeconds: planItems.remainingSeconds,
+          startedAt: planItems.startedAt,
+        })
         .from(planItems)
+        .innerJoin(categories, eq(planItems.categoryId, categories.id))
         .where(eq(planItems.dailyPlanId, planId));
 
+      const existingItemIds = existingItems.map((i) => i.id);
+      const allEntries =
+        existingItemIds.length > 0
+          ? await db
+              .select({
+                planItemId: timeEntries.planItemId,
+                startedAt: timeEntries.startedAt,
+                endedAt: timeEntries.endedAt,
+              })
+              .from(timeEntries)
+              .where(
+                and(
+                  eq(timeEntries.userId, userId),
+                  inArray(timeEntries.planItemId, existingItemIds),
+                ),
+              )
+          : [];
+
+      const now = new Date();
       const existingMap = new Map(existingItems.map((i) => [i.categoryId, i]));
       const updatedCategoryIds: string[] = [];
 
@@ -280,6 +310,38 @@ export class PlansService {
         const existingItem = existingMap.get(item.categoryId);
 
         if (existingItem) {
+          // Calculate time already used today for this category
+          const itemEntries = allEntries.filter(
+            (e) => e.planItemId === existingItem.id,
+          );
+          const actualFromEntries = calculateActualSeconds(itemEntries, now);
+          const elapsedFromRemaining =
+            existingItem.plannedSeconds -
+            existingItem.remainingSeconds +
+            (existingItem.startedAt
+              ? Math.max(
+                  0,
+                  Math.floor(
+                    (now.getTime() - new Date(existingItem.startedAt).getTime()) /
+                      1000,
+                  ),
+                )
+              : 0);
+          const usedSeconds = Math.max(actualFromEntries, elapsedFromRemaining);
+          const minPlannedSeconds = calculateMinimumPlannedSeconds(usedSeconds);
+
+          // Enforce minimum planned time rule:
+          // A category cannot be planned below the time already used today (rounded UP to 30 minutes).
+          if (item.plannedSeconds < minPlannedSeconds) {
+            const usedStr = formatDurationFriendly(usedSeconds);
+            const minStr = formatDurationFriendly(minPlannedSeconds);
+            const err = new Error(
+              `You've already used ${usedStr} here, so ${minStr} is the minimum.`,
+            );
+            (err as any).statusCode = 400;
+            throw err;
+          }
+
           // Rule 6: Editing planned_seconds while a timer runs:
           // change remaining by the difference (new minus old) and do NOT restart or reset the running timer
           const newRemaining = calculatePlannedSecondsChange(
@@ -307,18 +369,39 @@ export class PlansService {
         }
       }
 
-      // Check if removing any item with a running timer
+      // Check if removing any item with a running timer or used time
       const itemsToRemove = existingItems.filter(
         (i) => !updatedCategoryIds.includes(i.categoryId),
       );
 
-      const runningRemovedItem = itemsToRemove.find((i) => i.startedAt !== null);
+      const runningRemovedItem = itemsToRemove.find(
+        (i) => i.startedAt !== null,
+      );
       if (runningRemovedItem) {
         const err = new Error(
           'Cannot remove a category with an active running timer. Pause it first.',
         );
         (err as any).statusCode = 400;
         throw err;
+      }
+
+      for (const removedItem of itemsToRemove) {
+        const itemEntries = allEntries.filter(
+          (e) => e.planItemId === removedItem.id,
+        );
+        const actualFromEntries = calculateActualSeconds(itemEntries, now);
+        const elapsedFromRemaining =
+          removedItem.plannedSeconds - removedItem.remainingSeconds;
+        const usedSeconds = Math.max(actualFromEntries, elapsedFromRemaining);
+        if (usedSeconds > 0) {
+          const usedStr = formatDurationFriendly(usedSeconds);
+          const minStr = formatDurationFriendly(calculateMinimumPlannedSeconds(usedSeconds));
+          const err = new Error(
+            `You've already used ${usedStr} here, so ${minStr} is the minimum.`,
+          );
+          (err as any).statusCode = 400;
+          throw err;
+        }
       }
 
       if (itemsToRemove.length > 0) {

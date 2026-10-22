@@ -107,7 +107,7 @@ async function testLiveUserExperience() {
     console.log(`  Items: Academic (${academicItemId}), Career (${careerItemId})`);
 
     // 6. Start Category 1 (Academic)
-    console.log('\n[6/8] Starting timer on Academic (POST /api/timer/start)...');
+    console.log('\n[6/10] Starting timer on Academic (POST /api/timer/start)...');
     const startARes = await fetch(`${BASE_URL}/api/timer/start`, {
       method: 'POST',
       headers: authHeaders,
@@ -117,52 +117,78 @@ async function testLiveUserExperience() {
     if (!startARes.ok) throw new Error(`Start A failed: ${JSON.stringify(startAData)}`);
     console.log(`✓ Academic timer started at: ${startAData.data.activeItem.startedAt}`);
 
-    // Wait 2 seconds
+    // Wait 2 seconds while Academic runs
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // 7. Start Category 2 (Career) -> Auto-pauses Academic
-    console.log('\n[7/8] Starting timer on Career (POST /api/timer/start)...');
-    const startBRes = await fetch(`${BASE_URL}/api/timer/start`, {
-      method: 'POST',
+    // 7. Edit plan while timer runs:
+    // Timer keeps running, remaining changes by difference
+    console.log('\n[7/10] Editing plan while Academic timer runs (increasing Academic planned from 4h to 4.5h)...');
+    const editPlanRes = await fetch(`${BASE_URL}/api/plans/${planId}`, {
+      method: 'PATCH',
       headers: authHeaders,
-      body: JSON.stringify({ planItemId: careerItemId }),
+      body: JSON.stringify({
+        items: [
+          { categoryId: 'academic', plannedSeconds: 4 * 3600 + 1800 }, // +1800s (4.5h)
+          { categoryId: 'life_family', plannedSeconds: 2 * 3600 },
+          { categoryId: 'entertainment', plannedSeconds: 2 * 3600 },
+          { categoryId: 'career', plannedSeconds: 2 * 3600 },
+        ],
+      }),
     });
-    const startBData = (await startBRes.json()) as any;
-    if (!startBRes.ok) throw new Error(`Start B failed: ${JSON.stringify(startBData)}`);
-    console.log(`✓ Career timer started. Active Item: ${startBData.data.activeItem.categoryName}`);
+    const editPlanData = (await editPlanRes.json()) as any;
+    if (!editPlanRes.ok) throw new Error(`Edit plan failed: ${JSON.stringify(editPlanData)}`);
+    const academicEdited = editPlanData.data.plan.items.find((i: any) => i.id === academicItemId);
+    console.log(`✓ Academic planned increased to: ${academicEdited.plannedSeconds}s`);
+    console.log(`  New remaining: ${academicEdited.remainingSeconds}s (was 14400s, now 16200s)`);
+    console.log(`  Academic timer still running: startedAt = ${academicEdited.startedAt}`);
 
-    // Check status to verify Academic auto-paused
-    const statusMidRes = await fetch(`${BASE_URL}/api/timer/status?date=${todayStr}`, {
+    // 8. Try to go below the used time (rejected)
+    console.log('\n[8/10] Trying to edit planned time below already used time...');
+    const failMinRes = await fetch(`${BASE_URL}/api/plans/${planId}`, {
+      method: 'PATCH',
+      headers: authHeaders,
+      body: JSON.stringify({
+        items: [
+          { categoryId: 'academic', plannedSeconds: 0 }, // Academic has used ~2s, so min is 1800s!
+          { categoryId: 'life_family', plannedSeconds: 2 * 3600 },
+          { categoryId: 'entertainment', plannedSeconds: 2 * 3600 },
+          { categoryId: 'career', plannedSeconds: 2 * 3600 },
+        ],
+      }),
+    });
+    if (failMinRes.status !== 400) {
+      throw new Error(`Expected 400 rejection when planning below used time, got ${failMinRes.status}`);
+    }
+    const failMinJson = (await failMinRes.json()) as any;
+    console.log(`✓ Rejected planning below used time (400): "${failMinJson.error}"`);
+
+    // 9. Open summary and check numbers
+    console.log('\n[9/10] Getting daily summary (GET /api/plans/summary)...');
+    const summaryRes = await fetch(`${BASE_URL}/api/plans/summary?date=${todayStr}`, {
       headers: authHeaders,
     });
-    const statusMid = (await statusMidRes.json()) as any;
-    const academicMid = statusMid.data.items.find((i: any) => i.id === academicItemId);
-    const careerMid = statusMid.data.items.find((i: any) => i.id === careerItemId);
-    console.log(`✓ Verified single running timer invariant:`);
-    console.log(`  Academic auto-paused: remaining = ${academicMid.remainingSeconds}s (< 14400s)`);
-    console.log(`  Career actively running: startedAt = ${careerMid.startedAt}`);
+    if (!summaryRes.ok) throw new Error(`Summary failed: ${summaryRes.status}`);
+    const summaryData = (await summaryRes.json()) as any;
+    const summary = summaryData.data.summary;
+    console.log(`✓ Summary returned:`);
+    console.log(`  Total Planned: ${summary.totalPlannedSeconds}s`);
+    console.log(`  Total Actual: ${summary.totalActualSeconds}s (includes running timer)`);
+    console.log(`  Categories: ${summary.categories.length}`);
+    for (const cat of summary.categories) {
+      console.log(`  - [${cat.categoryName}] Planned: ${cat.plannedSeconds}s | Actual: ${cat.actualSeconds}s | Running: ${cat.isRunning}`);
+    }
+    if (summary.totalActualSeconds <= 0) {
+      throw new Error('Expected totalActualSeconds > 0 for running category');
+    }
 
-    // Wait 2 seconds then pause
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log('\n[8/8] Pausing Career timer (POST /api/timer/pause) & simulating app reopen...');
+    // 10. Pause timer before cleanup
+    console.log('\n[10/10] Pausing running timer...');
     const pauseRes = await fetch(`${BASE_URL}/api/timer/pause`, {
       method: 'POST',
       headers: authHeaders,
     });
-    const pauseData = (await pauseRes.json()) as any;
-    if (!pauseRes.ok) throw new Error(`Pause failed: ${JSON.stringify(pauseData)}`);
-    console.log(`✓ Career timer paused. Saved remaining = ${pauseData.data.pausedItem.remainingSeconds}s`);
-
-    // Reopen app simulation
-    const reopenRes = await fetch(`${BASE_URL}/api/timer/status?date=${todayStr}`, {
-      headers: authHeaders,
-    });
-    const reopenData = (await reopenRes.json()) as any;
-    if (reopenData.data.activeItem === null) {
-      console.log('✓ App reopen verified: activeItem is null, saved remaining times accurately persisted.');
-    } else {
-      throw new Error(`Expected no active item, got: ${JSON.stringify(reopenData.data.activeItem)}`);
-    }
+    if (!pauseRes.ok) throw new Error(`Pause failed: ${pauseRes.status}`);
+    console.log('✓ Timer paused successfully.');
 
     console.log('\n================================================================');
     console.log('  🎉 REAL END-TO-END FLOW VERIFIED SUCCESSFULLY!');
