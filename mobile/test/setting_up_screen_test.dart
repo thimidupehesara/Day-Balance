@@ -84,8 +84,8 @@ void main() {
               builder: (context, state) => const SettingUpScreen(),
             ),
             GoRoute(
-              path: '/plan',
-              builder: (context, state) => const Scaffold(body: Text('Plan Screen')),
+              path: '/home',
+              builder: (context, state) => const Scaffold(body: Text('Today Screen')),
             ),
           ],
         );
@@ -111,7 +111,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       // Semantics label present
-      expect(find.bySemanticsLabel('Setting up your day'), findsOneWidget);
+      expect(find.bySemanticsLabel('Setting up your day. Please wait.'), findsOneWidget);
 
       // RepaintBoundary wrapping the SkyPainter CustomPaint
       expect(find.byType(RepaintBoundary), findsWidgets);
@@ -123,24 +123,30 @@ void main() {
       // Fast forward past the 4.5s delay + 300ms confirmation pause
       await tester.pump(const Duration(milliseconds: 4600));
       await tester.pump(const Duration(milliseconds: 500));
-      expect(find.text('Plan Screen'), findsOneWidget);
+
+      // Tap continue button
+      await tester.tap(find.text(SettingUpTexts.continueButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Today Screen'), findsOneWidget);
     });
 
-    testWidgets('waits minimum ~4.5 seconds before navigating to /plan on success',
+    testWidgets('waits minimum ~4.5 seconds before navigating to /home on success',
         (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
 
       // At 2 seconds: save is complete, but minimum time (4.5s) has NOT passed
       await tester.pump(const Duration(seconds: 2));
-      expect(find.text('Plan Screen'), findsNothing);
+      expect(find.text('Today Screen'), findsNothing);
 
       // Advance past 4.5s minimum display time + 300ms confirmation pause
       await tester.pump(const Duration(milliseconds: 2700));
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Successfully routed to /plan
-      expect(find.text('Plan Screen'), findsOneWidget);
+      // Successfully routed after tapping continue
+      await tester.tap(find.text(SettingUpTexts.continueButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Today Screen'), findsOneWidget);
     });
 
     testWidgets('failure shows screen 16 error state with Try again and Back buttons',
@@ -156,8 +162,8 @@ void main() {
       expect(find.text(SettingUpTexts.tryAgainButton), findsOneWidget);
       expect(find.text(SettingUpTexts.backButton), findsOneWidget);
 
-      // Did not navigate to /plan
-      expect(find.text('Plan Screen'), findsNothing);
+      // Did not navigate to /home
+      expect(find.text('Today Screen'), findsNothing);
     });
 
     testWidgets('Try again repeats the save operation', (tester) async {
@@ -181,7 +187,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(fakeRepo.saveCount, 2);
-      expect(find.text('Plan Screen'), findsOneWidget);
+      await tester.tap(find.text(SettingUpTexts.continueButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Today Screen'), findsOneWidget);
     });
 
     testWidgets('Back button returns to categories keeping selections', (tester) async {
@@ -214,7 +222,9 @@ void main() {
       // Complete minimum display time + confirmation pause
       await tester.pump(const Duration(milliseconds: 4600));
       await tester.pump(const Duration(milliseconds: 500));
-      expect(find.text('Plan Screen'), findsOneWidget);
+      await tester.tap(find.text(SettingUpTexts.continueButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Today Screen'), findsOneWidget);
     });
   });
 }

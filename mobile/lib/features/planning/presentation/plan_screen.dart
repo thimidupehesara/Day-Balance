@@ -3,7 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/categories.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../shared/widgets/app_back_button.dart';
+import '../../../shared/widgets/hours_left_card.dart';
+import '../../../shared/widgets/pill_stepper.dart';
+import '../../../shared/widgets/primary_button.dart';
 import 'plan_controller.dart';
 
 class PlanScreen extends ConsumerStatefulWidget {
@@ -28,320 +33,270 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
     final controller = ref.read(planControllerProvider.notifier);
 
     final displayCategories = kCategories.where((cat) {
-      // Show categories user selected or if empty show all
-      return state.plannedSeconds.containsKey(cat.id) ||
-          state.plannedSeconds.isEmpty;
+      if (state.selectedCategoryIds.isEmpty) return true;
+      return state.selectedCategoryIds.contains(cat.id);
     }).toList();
 
-    final budgetRatio = state.wakingSeconds > 0
-        ? (state.totalPlannedSeconds / state.wakingSeconds).clamp(0.0, 1.0)
-        : 0.0;
-
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text('Plan Your Day', style: AppTextStyles.h2),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.close, color: AppColors.textPrimary),
-            onPressed: () => context.go('/home'),
-          ),
-        ],
-      ),
-      body: state.isLoading && state.plannedSeconds.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: Column(
+      backgroundColor: AppColors.backgroundCream,
+      body: SafeArea(
+        child: state.isLoading && state.plannedSeconds.isEmpty
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primarySage,
+                ),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top Budget Summary Banner
-                  Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 8.0,
-                    ),
-                    padding: const EdgeInsets.all(20.0),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                  // Top Navigation Bar
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12, top: 4, bottom: 4),
+                    child: Row(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Hours left to plan',
-                                  style: AppTextStyles.bodySmall,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  state.formatSeconds(state.secondsLeftToPlan),
-                                  style: AppTextStyles.timerLarge.copyWith(
-                                    fontSize: 34,
-                                    color: state.secondsLeftToPlan == 0
-                                        ? AppColors.success
-                                        : AppColors.primary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceVariant,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                'Budget: ${state.formatSeconds(state.wakingSeconds)}',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
+                        AppBackButton(
+                          onPressed: () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/home');
+                            }
+                          },
                         ),
-                        const SizedBox(height: 14),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: LinearProgressIndicator(
-                            value: budgetRatio,
-                            minHeight: 8,
-                            backgroundColor: AppColors.surfaceVariant,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              state.secondsLeftToPlan == 0
-                                  ? AppColors.success
-                                  : AppColors.primary,
-                            ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Plan your day',
+                          style: TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.text,
                           ),
                         ),
                       ],
                     ),
                   ),
 
-                  // Soft Nudge Warning for Entertainment > 30%
-                  if (state.hasEntertainmentWarning) ...[
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 20.0,
-                        vertical: 6.0,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14.0,
-                        vertical: 10.0,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: AppColors.warning.withValues(alpha: 0.35),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.lightbulb_outline_rounded,
-                            color: AppColors.warning,
-                            size: 22,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Entertainment is taking ${(state.entertainmentRatio * 100).toInt()}% of your waking time. Ensure key study & rest goals are balanced!',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: const Color(0xFF8A5B00),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-
-                  // Category Stepper List
+                  // Main Scrollable Body
                   Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0,
-                        vertical: 10.0,
-                      ),
-                      itemCount: displayCategories.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final cat = displayCategories[index];
-                        final plannedSec = state.plannedSeconds[cat.id] ?? 0;
-                        final canAdd = state.secondsLeftToPlan >=
-                            PlanController.stepSeconds;
-                        final canSub =
-                            plannedSec >= PlanController.stepSeconds;
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
 
-                        return Container(
-                          padding: const EdgeInsets.all(16.0),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: plannedSec > 0
-                                  ? cat.color.withValues(alpha: 0.5)
-                                  : AppColors.divider,
-                              width: plannedSec > 0 ? 1.5 : 1.0,
-                            ),
+                          // Top Summary Section ("Hours left to plan")
+                          HoursLeftCard(
+                            title: 'Hours left to plan',
+                            hoursText: state.isOverAllocated
+                                ? '−${PlanState.formatDuration(state.overAllocatedSeconds)}'
+                                : PlanState.formatDuration(state.secondsLeftToPlan),
+                            subText:
+                                'of ${PlanState.formatDuration(state.wakingSeconds)}',
+                            progress: state.isOverAllocated
+                                ? 1.0
+                                : (state.wakingSeconds > 0
+                                    ? (state.totalPlannedSeconds /
+                                            state.wakingSeconds)
+                                        .clamp(0.0, 1.0)
+                                    : 0.0),
+                            isOverAllocated: state.isOverAllocated,
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: cat.color.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  cat.icon,
-                                  color: cat.color,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      cat.name,
-                                      style: AppTextStyles.bodyLarge.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      cat.description,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.bodySmall,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
 
-                              // Stepper Controls
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
+                          const SizedBox(height: 20),
+
+                          // Categories List with Steppers
+                          ...displayCategories.map((cat) {
+                            final plannedSec =
+                                state.plannedSeconds[cat.id] ?? 0;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Row(
                                 children: [
-                                  IconButton.filledTonal(
-                                    onPressed: canSub
-                                        ? () => controller.decrementCategory(cat.id)
-                                        : null,
-                                    iconSize: 18,
-                                    visualDensity: VisualDensity.compact,
-                                    icon: const Icon(Icons.remove),
+                                  // Category color bar
+                                  Container(
+                                    width: 4,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: cat.color,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
                                   ),
-                                  SizedBox(
-                                    width: 60,
+                                  const SizedBox(width: 8),
+
+                                  // Category Name
+                                  Expanded(
                                     child: Text(
-                                      state.formatSeconds(plannedSec),
-                                      textAlign: TextAlign.center,
-                                      style: AppTextStyles.bodyLarge.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: plannedSec > 0
-                                            ? cat.color
-                                            : AppColors.textSecondary,
+                                      cat.name,
+                                      style: const TextStyle(
+                                        fontFamily: AppTextStyles.fontFamily,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: AppColors.text,
                                       ),
                                     ),
                                   ),
-                                  IconButton.filledTonal(
-                                    onPressed: canAdd
-                                        ? () => controller.incrementCategory(cat.id)
-                                        : null,
-                                    iconSize: 18,
-                                    visualDensity: VisualDensity.compact,
-                                    icon: const Icon(Icons.add),
+
+                                  // Stepper
+                                  PillStepper(
+                                    label: PlanState.formatDuration(plannedSec),
+                                    onDecrement: () => controller
+                                        .decrementCategory(cat.id),
+                                    onIncrement: () => controller
+                                        .incrementCategory(cat.id),
+                                    canDecrement: plannedSec >=
+                                        PlanController.stepSeconds,
+                                    canIncrement: true,
+                                    usePlusMinus: true,
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                            );
+                          }),
 
-                  // Bottom Action Area
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 14.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (state.errorMessage != null) ...[
-                          Text(
-                            state.errorMessage!,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.error,
+                          const SizedBox(height: 12),
+
+                          // Dynamic State Nudge / Warning Banners
+                          if (state.isOverAllocated) ...[
+                            _buildAlertBanner(
+                              backgroundColor: AppColors.errorContainer,
+                              iconColor: AppColors.error,
+                              textColor: AppColors.error,
+                              icon: AppIcons.warning,
+                              text:
+                                  "You’re ${PlanState.formatShort(state.overAllocatedSeconds)} over. Free up ${PlanState.formatShort(state.overAllocatedSeconds) == '1h' ? 'an hour' : PlanState.formatShort(state.overAllocatedSeconds)} before starting your day.",
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                        ],
-                        ElevatedButton(
-                          onPressed: state.isLoading
-                              ? null
-                              : () async {
-                                  final ok = await controller.savePlan();
-                                  if (ok && context.mounted) {
-                                    context.go('/onboarding/setting-up');
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.textOnPrimary,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                          ] else if (state.isZeroHoursLeft) ...[
+                            _buildAlertBanner(
+                              backgroundColor: const Color(0xFFE0E8DB),
+                              iconColor: AppColors.primarySage,
+                              textColor: AppColors.primarySage,
+                              icon: AppIcons.info,
+                              text:
+                                  'Every hour has a place. You can adjust your plan as the day unfolds.',
                             ),
-                            elevation: 2,
-                          ),
-                          child: state.isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    valueColor:
-                                        AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
-                                )
-                              : const Text(
-                                  'Save Daily Plan',
-                                  style: AppTextStyles.button,
+                          ] else if (state.hasEntertainmentWarning) ...[
+                            _buildAlertBanner(
+                              backgroundColor: const Color(0xFFE0E8DB),
+                              iconColor: AppColors.primarySage,
+                              textColor: AppColors.primarySage,
+                              icon: AppIcons.info,
+                              text:
+                                  '${PlanState.formatShort(state.entertainmentSeconds)} for Entertainment. Does that leave enough room for the rest of your day?',
+                            ),
+                          ],
+
+                          // Error message from server if any
+                          if (state.errorMessage != null &&
+                              !state.isOverAllocated) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              state.errorMessage!,
+                              style: const TextStyle(
+                                color: AppColors.error,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 24),
+
+                          // Bottom Actions Section
+                          if (!state.isOverAllocated &&
+                              state.secondsLeftToPlan > 0) ...[
+                            Text(
+                              '${PlanState.formatShort(state.secondsLeftToPlan)} will stay as extra breathing room.',
+                              style: const TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
+                                color: AppColors.secondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+
+                          if (state.isOverAllocated) ...[
+                            Semantics(
+                              button: true,
+                              enabled: false,
+                              child: Container(
+                                width: double.infinity,
+                                height: 48,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: AppColors.outline,
+                                  borderRadius: BorderRadius.circular(100),
                                 ),
-                        ),
-                      ],
+                                child: Text(
+                                  'Free up ${PlanState.formatShort(state.overAllocatedSeconds)} to continue',
+                                  style: const TextStyle(
+                                    fontFamily: AppTextStyles.fontFamily,
+                                    color: AppColors.secondary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            AppPrimaryButton(
+                              text: 'Start my day',
+                              isLoading: state.isLoading,
+                              isEnabled: state.canStartDay,
+                              onPressed: () async {
+                                final success = await controller.savePlan();
+                                if (success && context.mounted) {
+                                  context.go('/home');
+                                }
+                              },
+                            ),
+                          ],
+
+                          const SizedBox(height: 24),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
+      ),
+    );
+  }
+
+  Widget _buildAlertBanner({
+    required Color backgroundColor,
+    required Color iconColor,
+    required Color textColor,
+    required IconData icon,
+    required String text,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: iconColor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                color: textColor,
+                fontSize: 12,
+                height: 1.35,
+              ),
             ),
+          ),
+        ],
+      ),
     );
   }
 }

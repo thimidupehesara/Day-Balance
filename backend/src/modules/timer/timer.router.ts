@@ -9,6 +9,7 @@ router.use(authenticate);
 
 router.post('/start', TimerController.start);
 router.post('/pause', TimerController.pause);
+router.post('/resume', TimerController.resume);
 router.get('/status', TimerController.getStatus);
 
 export { router as timerRouter };

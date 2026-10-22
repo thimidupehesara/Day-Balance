@@ -18,6 +18,7 @@ class AppColors {
   static const Color paper = Color(0xFFEEE8DC); // #EEE8DC Paper
   static const Color sageContainer = Color(0xFFE0E8DB); // #E0E8DB Sage container
   static const Color divider = Color(0xFFDDDCD2); // #DDDCD2 Divider
+  static const Color timerTrack = Color(0xFFE5E2D9); // #E5E2D9 Circular timer track
   static const Color errorContainer = Color(0xFFF6E2DE); // #F6E2DE Error container
   static const Color white = Color(0xFFFFFFFF); // #FFFFFF White
 
@@ -41,6 +42,27 @@ class AppColors {
   static const Color career = Color(0xFFC9DEDA); // #C9DEDA
   static const Color unplanned = Color(0xFFDEDED8); // #DEDED8
   static const Color rest = Color(0xFFE9CFCE); // #E9CFCE
+
+  static Color colorForCategory(String categoryId) {
+    switch (categoryId) {
+      case 'academic':
+        return academic;
+      case 'life_family':
+        return lifeFamily;
+      case 'entertainment':
+        return entertainment;
+      case 'personal_reading':
+        return personalReading;
+      case 'career':
+        return career;
+      case 'unplanned':
+        return unplanned;
+      case 'rest':
+        return rest;
+      default:
+        return unplanned;
+    }
+  }
 
   // Status
   static const Color success = primarySage;

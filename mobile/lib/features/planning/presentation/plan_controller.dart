@@ -1,12 +1,14 @@
 import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../core/constants/categories.dart';
 import '../../onboarding/data/onboarding_repository.dart';
 import '../data/plans_repository.dart';
 
 class PlanState {
   final int wakingSeconds;
   final Map<String, int> plannedSeconds; // categoryId -> plannedSeconds
+  final List<String> selectedCategoryIds;
   final String? existingPlanId;
   final bool isLoading;
   final String? errorMessage;
@@ -14,6 +16,7 @@ class PlanState {
   const PlanState({
     this.wakingSeconds = 16 * 3600, // default 16 hours
     this.plannedSeconds = const {},
+    this.selectedCategoryIds = const [],
     this.existingPlanId,
     this.isLoading = false,
     this.errorMessage,
@@ -23,19 +26,36 @@ class PlanState {
     return plannedSeconds.values.fold(0, (sum, val) => sum + val);
   }
 
-  int get secondsLeftToPlan {
-    return max(0, wakingSeconds - totalPlannedSeconds);
-  }
+  int get diffSeconds => wakingSeconds - totalPlannedSeconds;
+
+  int get secondsLeftToPlan => max(0, diffSeconds);
+
+  bool get isOverAllocated => diffSeconds < 0;
+
+  int get overAllocatedSeconds => diffSeconds < 0 ? -diffSeconds : 0;
+
+  bool get isZeroHoursLeft => diffSeconds == 0 && totalPlannedSeconds > 0;
+
+  int get entertainmentSeconds => plannedSeconds['entertainment'] ?? 0;
 
   double get entertainmentRatio {
-    if (wakingSeconds <= 0) return 0.0;
-    final entSec = plannedSeconds['entertainment'] ?? 0;
-    return entSec / wakingSeconds;
+    if (totalPlannedSeconds <= 0) return 0.0;
+    return entertainmentSeconds / totalPlannedSeconds;
   }
 
   bool get hasEntertainmentWarning => entertainmentRatio > 0.30;
 
-  String formatSeconds(int totalSec) {
+  bool get canStartDay => !isOverAllocated && totalPlannedSeconds > 0 && !isLoading;
+
+  /// Standard duration format matching Figma: e.g. "0h 30m", "14h 30m", "4h 00m"
+  static String formatDuration(int totalSec) {
+    final h = totalSec ~/ 3600;
+    final m = (totalSec % 3600) ~/ 60;
+    return '${h}h ${m.toString().padLeft(2, '0')}m';
+  }
+
+  /// Compact duration format: e.g. "30m", "1h", "1h 30m"
+  static String formatShort(int totalSec) {
     final h = totalSec ~/ 3600;
     final m = (totalSec % 3600) ~/ 60;
     if (h > 0 && m > 0) return '${h}h ${m}m';
@@ -46,6 +66,7 @@ class PlanState {
   PlanState copyWith({
     int? wakingSeconds,
     Map<String, int>? plannedSeconds,
+    List<String>? selectedCategoryIds,
     String? existingPlanId,
     bool? isLoading,
     String? errorMessage,
@@ -54,10 +75,10 @@ class PlanState {
     return PlanState(
       wakingSeconds: wakingSeconds ?? this.wakingSeconds,
       plannedSeconds: plannedSeconds ?? this.plannedSeconds,
+      selectedCategoryIds: selectedCategoryIds ?? this.selectedCategoryIds,
       existingPlanId: existingPlanId ?? this.existingPlanId,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage:
-          clearError ? null : (errorMessage ?? this.errorMessage),
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 }
@@ -75,7 +96,10 @@ class PlanController extends Notifier<PlanState> {
       final plansRepo = ref.read(plansRepositoryProvider);
 
       final user = await onboardingRepo.getProfile();
-      final userCategories = await onboardingRepo.getUserCategories();
+      List<String> userCategories = await onboardingRepo.getUserCategories();
+      if (userCategories.isEmpty) {
+        userCategories = kCategories.map((c) => c.id).toList();
+      }
 
       // Calculate waking seconds from profile
       int wakingSec = 16 * 3600; // fallback
@@ -95,7 +119,6 @@ class PlanController extends Notifier<PlanState> {
       final existingPlan = await plansRepo.getTodayPlan(todayStr);
 
       final map = <String, int>{};
-      // Prepopulate with user's selected categories
       for (final catId in userCategories) {
         map[catId] = 0;
       }
@@ -112,6 +135,7 @@ class PlanController extends Notifier<PlanState> {
       state = state.copyWith(
         wakingSeconds: wakingSec,
         plannedSeconds: map,
+        selectedCategoryIds: userCategories,
         existingPlanId: planId,
         isLoading: false,
       );
@@ -122,7 +146,7 @@ class PlanController extends Notifier<PlanState> {
   }
 
   void incrementCategory(String categoryId) {
-    if (state.secondsLeftToPlan < stepSeconds) return;
+    if (state.totalPlannedSeconds + stepSeconds > 24 * 3600) return;
 
     final updated = Map<String, int>.from(state.plannedSeconds);
     updated[categoryId] = (updated[categoryId] ?? 0) + stepSeconds;
@@ -139,6 +163,13 @@ class PlanController extends Notifier<PlanState> {
   }
 
   Future<bool> savePlan() async {
+    if (state.isOverAllocated) {
+      state = state.copyWith(
+        errorMessage: 'Free up time to continue',
+      );
+      return false;
+    }
+
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final plansRepo = ref.read(plansRepositoryProvider);

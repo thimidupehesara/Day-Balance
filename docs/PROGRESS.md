@@ -27,8 +27,8 @@
 | [Auth Module](backend/auth.md) | DONE | Register, login, logout, refresh, delete account | Verified live with real backend HTTP requests and Neon DB |
 | [Users Module](backend/users.md) | DONE | Profile, onboarding fields (wakeTime, bedtime, routineMinutes, onboardingDone) | Verified live with `test-onboarding-flow.ts` against Neon DB |
 | [Categories Module](backend/categories.md) | DONE | List categories, user selection (`/api/categories/mine`) | Verified live with `test-onboarding-flow.ts` against Neon DB |
-| [Plans Module](backend/plans.md) | DRAFT | Daily plans, plan items CRUD | Endpoints written and compile, not tested end-to-end |
-| [Timer Module](backend/timer.md) | DRAFT | Start/pause/resume, time entries, timer math | Endpoints written and compile, not tested end-to-end |
+| [Plans Module](backend/plans.md) | DONE | Daily plans, plan items CRUD, server waking seconds, planned vs actual summary | Verified live with `test-core-flow.ts` against Neon DB |
+| [Timer Module](backend/timer.md) | DONE | Atomic start/auto-pause in transaction, pause/overtime, resume, concurrency locking | Verified live with `test-core-flow.ts` and unit tests against Neon DB |
 
 ## Mobile Screens
 
@@ -42,8 +42,10 @@
 | [Onboarding Result](screens/onboarding_result.md) | DONE | Daily net hours calculation & breakdown matching Figma `_06_onboarding_result.dart` | Verified with widget tests and router transitions |
 | [Onboarding Categories](screens/onboarding_categories.md) | DONE | Select categories from the 7 matching Figma `_07_choose_categories.dart` | Verified with widget tests and live API |
 | [Setting Up Screen](screens/setup_loading.md) | DONE | "Setting up your day" loading screen with custom sky animation, honest social proof, and error retry | Built from spec; verified live and with widget tests |
-| [Today Screen](screens/today.md) | PAUSED | Main screen with timers, planned/remaining | Blocked on Figma design; do not continue |
-| [Plan Screen](screens/plan.md) | DRAFT | Daily planning with hour steppers | TEMPORARY UI invented by the AI, to be rebuilt from my Figma designs |
+| [Plan Screen](screens/plan.md) | DONE | Daily planning with 30m steppers, zero hours left, and over-allocated states matching Figma 08 | Verified with widget tests and live API |
+| [Today Screen](screens/today.md) | DONE | Main screen with before-planning, active timers, overtime, and screen 16 offline state matching Figma 09 | Verified with widget tests and live API |
+| [Active Timer](screens/active_timer.md) | DONE | Fullscreen focus timer with circular progress dial, overtime support, and category switcher matching Figma 10 | Verified with widget tests and live router integration |
+| [Switch Sheet](screens/switch_sheet.md) | DONE | Bottom modal sheet confirming switch between active timer and another planned category matching Figma 11 | Verified with widget tests and Today/Active Timer integration |
 | [Summary Screen](screens/summary.md) | PLANNED | End-of-day planned vs actual | Not started |
 | [Settings Screen](screens/settings.md) | PLANNED | User preferences, logout, delete account | Not started |
 
@@ -68,10 +70,15 @@
 | [App Text Field](components/app_text_field.md) | DONE | Outlined text field with floating label | 4dp radius, 56dp height, error styling |
 | [App Password Field](components/app_password_field.md) | DONE | Password field with show/hide toggle | Accessible 48dp toggle target, error styling |
 | [Category Constants](components/category_constants.md) | DONE | 7 fixed categories with colors and icons | Matches project specification categories |
+| [App Progress Bar](components/app_progress_bar.md) | DONE | 4dp rounded progress bar with custom track and fill colors | Used in planning and category cards |
+| [Hours Left Card](components/hours_left_card.md) | DONE | Top summary card for hours left to plan and total hours left | Supports over-allocated error state |
+| [Category Card](components/category_card.md) | DONE | Category timer card with idle, running, and overtime states | Supports auto-pause and overtime text |
 | [Notification Service](components/notification_service.md) | DRAFT | Local notification helper for timer overtime | Not wired into the app yet |
 
 ---
 
 ## Next Steps
-- Verify the core API (`feature/core-api-verify`).
-- Build Daily Planning (08) and Today (09).
+- Edit plan screen (12)
+- End of day summary screen (13)
+- History week screen (14)
+- Settings profile screen (15)

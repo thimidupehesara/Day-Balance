@@ -1,22 +1,19 @@
 # Plan Screen
-Status: DRAFT
+Status: DONE
 Location: `/mobile/lib/features/planning/presentation/plan_screen.dart`
 
-> **NOTE**: TEMPORARY UI invented by the AI, to be rebuilt from my Figma designs.
+Figma Reference: `08_daily_planning`, `08_daily_planning_zero_hours_left`, `08_daily_planning_over_allocated`
 
-## Draft Implementation
-- Created `PlanItemModel` and `DailyPlanModel` domain entities
-- Created `PlansRepository` for creating, loading, and patching daily plans
-- Created `PlanController`:
-  - Automatically loads user's net waking capacity from profile
-  - Prepopulates user's selected categories
-  - Loads existing plan if already created for today (enabling edit mode)
-  - 30-minute (1800 second) stepper controls with min/max clamps
-  - Real-time "Hours left to plan" countdown and progress bar
-  - Entertainment ratio calculation with soft nudge warning if entertainment exceeds 30% of waking capacity
-  - Enforces total planned time cannot exceed available waking hours
-- Created `PlanScreen` with cards, steppers, and summary card
-- Wired route `/plan` into `appRouter`
-
-## Notes for the next developer
-- Rebuild UI strictly according to Figma designs (`design/exports/png/08_daily_planning.png`, `design/exports/png/08_daily_planning_over_allocated.png`, `design/exports/png/08_daily_planning_zero_hours_left.png`) and `.dart` exports when instructed.
+## Done
+- Rebuilt `PlanScreen` and `PlanController` according to Figma exports and specs.
+- Displays only categories selected by the user in onboarding (or all if none specified).
+- Top "Hours left to plan" section using `HoursLeftCard`:
+  - Total waking hours calculated by profile wake time, bedtime, and routines.
+  - Progress bar tracking planned proportion vs available waking time.
+  - Under-budget state: Sage primary text, breathing room helper text ("30m will stay as extra breathing room.").
+  - Zero hours left state: "0h 00m", sage info card "Every hour has a place. You can adjust your plan as the day unfolds.", active "Start my day" button.
+  - Over-allocated state: error color "−1h 00m", full error progress bar, warning banner "You’re 1h over. Free up an hour before starting your day.", and disabled button "Free up 1h to continue".
+- PillStepper in 30-minute steps with category color indicator bar and plus/minus icons matching Figma.
+- Gentle nudge banner when Entertainment exceeds 30% of planned time: "3h for Entertainment. Does that leave enough room for the rest of your day?"
+- Saves plan via `POST /api/plans` (or `PATCH /api/plans/:id`) and routes to `/home` (Today).
+- Unit tests (`mobile/test/plan_calculation_test.dart`) and widget tests (`mobile/test/plan_screen_test.dart`) verifying all calculations and screen states.

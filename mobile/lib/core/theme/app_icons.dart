@@ -13,6 +13,14 @@ class AppIcons {
   static const IconData chevronRight = Symbols.chevron_right_rounded;
   static const IconData close = Symbols.close_rounded;
   static const IconData check = Symbols.check_rounded;
+  static const IconData add = Symbols.add_rounded;
+  static const IconData remove = Symbols.remove_rounded;
+  static const IconData play = Symbols.play_arrow_rounded;
+  static const IconData pause = Symbols.pause_rounded;
+  static const IconData edit = Symbols.edit_rounded;
+  static const IconData info = Symbols.info_rounded;
+  static const IconData warning = Symbols.warning_rounded;
+  static const IconData refresh = Symbols.refresh_rounded;
 
   // Checkbox
   static const IconData checkboxChecked = Symbols.check_box_rounded;
