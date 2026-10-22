@@ -1,50 +1,18 @@
 # Day-Balance
 
-A daily time-budgeting mobile app (Flutter + Node.js + PostgreSQL).
+Daily time-budgeting app (Flutter + Node.js + Neon PostgreSQL).
 
-**Read `/docs/PROGRESS.md` first.** Report which items are IN PROGRESS and wait for the user to confirm before continuing. Never start PLANNED or PAUSED items unless the user's current message asks for them. Build ONLY what the user's current message requests; if more seems needed, ask. Follow the doc template. Update docs as you work.
+## Commands
+- Backend: `cd backend && npm run dev` (:3000) | `npm test` (unit) | `npm run test:live` (live)
+- Mobile: `cd mobile && flutter analyze && flutter test && flutter run`
 
-## Status Definitions
-- **PLANNED**: Not started.
-- **DRAFT**: Code written and compiles, but NOT run or tested end-to-end.
-- **DONE**: Verified by actually running it (e.g. a real API call or emulator test).
-- **PAUSED**: Deliberately stopped, waiting on something (design, decision).
+## Figma Rule
+Before building or changing a screen: find its row in `design/FIGMA_LINKS.md`, look at the PNG, read the `.dart` export, then build cleanly with our theme tokens and shared widgets, responsive. Never paste exported code, never import from `/design`, never edit `/design`. Do not call the Figma MCP unless I ask. If a screen has no design, build from my written spec and flag it.
 
-## Stack
-- **Mobile** (`/mobile`): Flutter 3.29.0, Dart 3.7.0, Material 3, flutter_riverpod, go_router, dio
-- **Backend** (`/backend`): Node.js, Express, TypeScript (strict), Drizzle ORM, PostgreSQL on Neon, JWT auth
-- **Docs** (`/docs`): Handoff documentation for AI continuity
-- **Design** (`/design`): Figma exports (PNGs in `/design/exports/png/`, CodeTea Flutter `.dart` exports in `/design/exports/dart/`), links (`design/FIGMA_LINKS.md`), and tokens
+## Docs Protocol
+At the end of a task, update only `docs/PROGRESS.md`: the status table, 'Next step', 'Known issues' (3 lines of changes at most). Never create a document for a screen, widget or feature. Do not repeat the same information in two files. Do not paste test output into docs. Docs work must stay under 10% of a task.
 
-## Figma Workflow Rule
-Before building or changing ANY screen, in this order: (1) find its row in design/FIGMA_LINKS.md; (2) look at the PNG; (3) read the .dart export fully; (4) read the live Figma frame through the Figma MCP using the link in that row (read only that frame, not the whole file); (5) only then plan and build. Use the data as the exact source for sizes, spacing, colors, fonts, text, icons and structure, but rebuild the screen cleanly using our theme tokens (mobile/lib/core/theme) and shared widgets (mobile/lib/shared/widgets), and make it responsive. Never paste exported code unchanged, never import from /design, never edit /design. If the Figma MCP fails or is rate limited, continue with the PNG and .dart export, and mention it in the report. Do not stop to ask. For screens with no PNG, use the .dart export only. If a screen has no design row, build it from the written spec in the task, and flag it in the report. If something is unclear, make the most reasonable choice and list assumptions in the report. After building, run the screen and compare it with the PNG, and list any differences.
-
-## Database Safety Rule
-Never run destructive commands (DROP, TRUNCATE, or DELETE without a WHERE clause) without user approval. Test users must use `@example.com` emails and be deleted at the end of each test run. Do not stop to ask about the Neon database branch.
-
-## Quick commands
-```bash
-# Backend
-cd backend && cp .env.example .env   # fill in your secrets
-npm install && npm run dev            # start API on :3000
-
-# Mobile
-cd mobile && flutter pub get
-flutter analyze                       # lint check
-flutter run                           # launch on emulator/device
-
-# Database
-cd backend
-npm run db:generate                   # generate migration from schema
-npm run db:migrate                    # apply migration to Neon DB
-npm run db:seed                       # seed the 7 categories
-```
-
-## Protocol for AI tools
-Every screen, component, and backend module has a doc in `/docs/`. Before implementing anything, create/update its doc with a "Plan" checklist. After finishing, replace "Plan" with "Done" and update `PROGRESS.md`.
-
-## Git Workflow Rule
-- Checkout to a new feature branch (`feature/<screen-name>`) before building each screen or feature.
-- When finished, stage all files and commit with a clear, descriptive commit message.
-- **NEVER push to remote (`git push`) yourself.**
-- Report the branch name to the user so they can push manually and tell you when to continue.
+## Rules
+- Safety: Never run destructive DB commands (DROP, TRUNCATE, DELETE without WHERE). Test users use `@example.com` and must be deleted.
+- Git: One feature branch per task (`feature/<name>`). Never push to `main`. Never run `git push` yourself; report the branch name to push.
+- Verification: Run each check once per task (`flutter analyze`, `flutter test`, `npx tsc --noEmit`, `npm test`, `npm run build`). Run `npm run test:live` once at the end of backend tasks. Do not use the schedule tool. Keep reports under 25 lines.
