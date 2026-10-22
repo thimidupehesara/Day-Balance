@@ -46,7 +46,8 @@
 | [Today Screen](screens/today.md) | DONE | Main screen with before-planning, active timers, overtime, and screen 16 offline state matching Figma 09 | Verified with widget tests and live API |
 | [Active Timer](screens/active_timer.md) | DONE | Fullscreen focus timer with circular progress dial, overtime support, and category switcher matching Figma 10 | Verified with widget tests and live router integration |
 | [Switch Sheet](screens/switch_sheet.md) | DONE | Bottom modal sheet confirming switch between active timer and another planned category matching Figma 11 | Verified with widget tests and Today/Active Timer integration |
-| [Summary Screen](screens/summary.md) | PLANNED | End-of-day planned vs actual | Not started |
+| [Edit Plan Screen](screens/edit_plan.md) | DONE | Edit today's plan modal with min planned rule matching Figma 12 | Verified with widget tests and live API |
+| [Summary Screen](screens/summary.md) | DONE | End-of-day planned vs actual paired bars matching Figma 13 | Verified with widget tests and live API |
 | [Settings Screen](screens/settings.md) | PLANNED | User preferences, logout, delete account | Not started |
 
 ## Mobile Components
@@ -57,7 +58,7 @@
 | [App Router](components/app_router.md) | DONE | GoRouter with smooth horizontal shared axis and fade-through transitions | Verified with smoke test and live navigation |
 | [Theme System](components/theme_system.md) | DONE | AppColors, AppTextStyles, AppTheme | Extracted from Figma Style Guide |
 | [App Icons](components/app_icons.md) | DONE | Single source of truth for all icons using Material Symbols | Rounded style, weight 400, outlined |
-| [App Transitions](components/app_transitions.md) | DONE | Smooth shared-axis and fade-through page transitions | Uses `animations` package |
+| [App Transitions](components/app_transitions.md) | DONE | Smooth shared-axis, modal slide-up, and fade-through page transitions | Uses `animations` package |
 | [App Time Picker](components/app_time_picker.md) | DONE | 3-wheel scrolling wheel time picker dialog (Hour, Minute 5m, AM/PM) | Uses `ListWheelScrollView` with haptic feedback |
 | [App Back Button](components/app_back_button.md) | DONE | Back button with 48dp minimum touch target | Uses `AppIcons.back` |
 | [Step Progress Bar](components/step_progress_bar.md) | DONE | 3-segment pill progress indicator ("YOUR DAY · X OF 3") | Fully responsive |
@@ -78,7 +79,8 @@
 ---
 
 ## Next Steps
-- Edit plan screen (12)
-- End of day summary screen (13)
-- History week screen (14)
-- Settings profile screen (15)
+- (a) Local notification when a category reaches zero, Android permissions and battery notes
+- (b) Settings (15)
+- (c) Error and empty states (16)
+- (d) Forgot password
+

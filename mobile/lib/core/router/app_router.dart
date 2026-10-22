@@ -9,8 +9,10 @@ import '../../features/onboarding/presentation/onboarding_result_screen.dart';
 import '../../features/onboarding/presentation/onboarding_categories_screen.dart';
 import '../../features/onboarding/presentation/setting_up_screen.dart';
 import '../../features/planning/presentation/plan_screen.dart';
+import '../../features/planning/presentation/edit_plan_screen.dart';
 import '../../features/timer/presentation/today_screen.dart';
 import '../../features/timer/presentation/active_timer_screen.dart';
+import '../../features/summary/presentation/summary_screen.dart';
 import 'app_transitions.dart';
 
 // Placeholder screens — will be replaced with real implementations
@@ -130,6 +132,14 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
     GoRoute(
+      path: '/plan/edit',
+      name: 'edit-plan',
+      pageBuilder: (context, state) => AppTransitions.modal(
+        state: state,
+        child: const EditPlanScreen(),
+      ),
+    ),
+    GoRoute(
       path: '/timer',
       name: 'timer',
       pageBuilder: (context, state) {
@@ -145,7 +155,7 @@ final GoRouter appRouter = GoRouter(
       name: 'summary',
       pageBuilder: (context, state) => AppTransitions.sharedAxis(
         state: state,
-        child: const _PlaceholderScreen(title: 'Day Summary'),
+        child: const SummaryScreen(),
       ),
     ),
     GoRoute(
