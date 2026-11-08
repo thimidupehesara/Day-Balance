@@ -1,6 +1,9 @@
+import '../../../shared/widgets/app_page.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -29,7 +32,10 @@ class _EditPlanScreenState extends ConsumerState<EditPlanScreen> {
     });
   }
 
-  Future<bool> _handleClose(BuildContext context, bool hasUnsavedChanges) async {
+  Future<bool> _handleClose(
+    BuildContext context,
+    bool hasUnsavedChanges,
+  ) async {
     if (!hasUnsavedChanges) {
       if (context.canPop()) {
         context.pop();
@@ -43,9 +49,7 @@ class _EditPlanScreenState extends ConsumerState<EditPlanScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Discard changes?',
           style: TextStyle(
@@ -110,7 +114,7 @@ class _EditPlanScreenState extends ConsumerState<EditPlanScreen> {
         if (didPop) return;
         await _handleClose(context, state.hasUnsavedChanges);
       },
-      child: Scaffold(
+      child: AppPage(
         backgroundColor: AppColors.backgroundCream,
         body: SafeArea(
           child: state.isLoading && state.items.isEmpty
@@ -144,8 +148,10 @@ class _EditPlanScreenState extends ConsumerState<EditPlanScreen> {
                             button: true,
                             label: 'Close',
                             child: InkWell(
-                              onTap: () =>
-                                  _handleClose(context, state.hasUnsavedChanges),
+                              onTap: () => _handleClose(
+                                context,
+                                state.hasUnsavedChanges,
+                              ),
                               borderRadius: BorderRadius.circular(24),
                               child: const SizedBox(
                                 width: 44,
@@ -178,14 +184,15 @@ class _EditPlanScreenState extends ConsumerState<EditPlanScreen> {
                               hoursText: state.isOverAllocated
                                   ? '−${TodayTimerState.formatDuration(state.overAllocatedSeconds)}'
                                   : TodayTimerState.formatDuration(
-                                      state.secondsLeftToPlan),
+                                      state.secondsLeftToPlan,
+                                    ),
                               progress: state.isOverAllocated
                                   ? 1.0
                                   : (state.wakingSeconds > 0
-                                      ? (state.totalPlannedSeconds /
-                                              state.wakingSeconds)
-                                          .clamp(0.0, 1.0)
-                                      : 0.0),
+                                        ? (state.totalPlannedSeconds /
+                                                  state.wakingSeconds)
+                                              .clamp(0.0, 1.0)
+                                        : 0.0),
                               isOverAllocated: state.isOverAllocated,
                             ),
 
@@ -206,8 +213,9 @@ class _EditPlanScreenState extends ConsumerState<EditPlanScreen> {
                                           height: 32,
                                           decoration: BoxDecoration(
                                             color: item.categoryColor,
-                                            borderRadius:
-                                                BorderRadius.circular(4),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
@@ -229,11 +237,16 @@ class _EditPlanScreenState extends ConsumerState<EditPlanScreen> {
                                         // Pill Stepper in 30-minute steps
                                         PillStepper(
                                           label: TodayTimerState.formatDuration(
-                                              item.currentPlannedSeconds),
-                                          onDecrement: () => controller
-                                              .decrementCategory(item.categoryId),
-                                          onIncrement: () => controller
-                                              .incrementCategory(item.categoryId),
+                                            item.currentPlannedSeconds,
+                                          ),
+                                          onDecrement: () =>
+                                              controller.decrementCategory(
+                                                item.categoryId,
+                                              ),
+                                          onIncrement: () =>
+                                              controller.incrementCategory(
+                                                item.categoryId,
+                                              ),
                                           canDecrement: item.canDecrement,
                                           canIncrement: true,
                                           usePlusMinus: true,
@@ -245,7 +258,9 @@ class _EditPlanScreenState extends ConsumerState<EditPlanScreen> {
                                     if (item.minPlannedSeconds > 0) ...[
                                       const SizedBox(height: 4),
                                       Padding(
-                                        padding: const EdgeInsets.only(left: 12),
+                                        padding: const EdgeInsets.only(
+                                          left: 12,
+                                        ),
                                         child: Text(
                                           item.friendlyMinText,
                                           style: const TextStyle(
@@ -301,8 +316,7 @@ class _EditPlanScreenState extends ConsumerState<EditPlanScreen> {
                                       child: Text(
                                         'You’re ${TodayTimerState.formatShort(state.overAllocatedSeconds)} over. Free up time to continue.',
                                         style: const TextStyle(
-                                          fontFamily:
-                                              AppTextStyles.fontFamily,
+                                          fontFamily: AppTextStyles.fontFamily,
                                           color: AppColors.error,
                                           fontSize: 12,
                                           fontWeight: FontWeight.w500,
@@ -357,8 +371,8 @@ class _EditPlanScreenState extends ConsumerState<EditPlanScreen> {
                                     isLoading: state.isSaving,
                                     onPressed: state.canSave
                                         ? () async {
-                                            final ok =
-                                                await controller.savePlan();
+                                            final ok = await controller
+                                                .savePlan();
                                             if (ok && context.mounted) {
                                               if (context.canPop()) {
                                                 context.pop();

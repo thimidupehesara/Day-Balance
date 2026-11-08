@@ -1,7 +1,10 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../data/onboarding_repository.dart';
+import '../../../core/constants/categories.dart';
 
 class OnboardingState {
   final TimeOfDay wakeTime;
@@ -9,6 +12,7 @@ class OnboardingState {
   final int morningRoutineMinutes;
   final int windUpRoutineMinutes;
   final Set<String> selectedCategories;
+  final List<Category> availableCategories;
   final bool isLoading;
   final String? errorMessage;
 
@@ -27,6 +31,7 @@ class OnboardingState {
       'rest',
     },
     this.isLoading = false,
+    this.availableCategories = kCategories,
     this.errorMessage,
   });
 
@@ -77,8 +82,9 @@ class OnboardingState {
 
     final sleepH = sleepMinutes ~/ 60;
     final sleepM = sleepMinutes % 60;
-    final sleepStr =
-        sleepM == 0 ? '$sleepH hours of sleep' : '$sleepH h $sleepM m of sleep';
+    final sleepStr = sleepM == 0
+        ? '$sleepH hours of sleep'
+        : '$sleepH h $sleepM m of sleep';
     return '${formatT(wakeTime)} — ${formatT(bedtime)} awake · $sleepStr';
   }
 
@@ -89,6 +95,7 @@ class OnboardingState {
     int? windUpRoutineMinutes,
     int? routineMinutes,
     Set<String>? selectedCategories,
+    List<Category>? availableCategories,
     bool? isLoading,
     String? errorMessage,
     bool clearError = false,
@@ -108,9 +115,9 @@ class OnboardingState {
       morningRoutineMinutes: finalMorning,
       windUpRoutineMinutes: finalWindUp,
       selectedCategories: selectedCategories ?? this.selectedCategories,
+      availableCategories: availableCategories ?? this.availableCategories,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage:
-          clearError ? null : (errorMessage ?? this.errorMessage),
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 }
@@ -118,6 +125,62 @@ class OnboardingState {
 class OnboardingController extends Notifier<OnboardingState> {
   @override
   OnboardingState build() => const OnboardingState();
+
+  Future<void> loadAvailableCategories() async {
+    try {
+      final available = await ref
+          .read(onboardingRepositoryProvider)
+          .getAvailableCategories();
+      if (!ref.mounted) return;
+      // A creation may finish while this earlier request is still in flight.
+      final merged = {for (final c in available) c.id: c};
+      for (final c in state.availableCategories) {
+        if (c.id.startsWith('custom:')) merged.putIfAbsent(c.id, () => c);
+      }
+      state = state.copyWith(
+        availableCategories: merged.values.toList(),
+        clearError: true,
+      );
+    } catch (_) {
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        errorMessage:
+            'Could not load saved custom categories. Tap retry to load them.',
+      );
+    }
+  }
+
+  Future<bool> addCustomCategory(
+    String name,
+    String description,
+    String color,
+  ) async {
+    if (state.isLoading) return false;
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final category = await ref
+          .read(onboardingRepositoryProvider)
+          .createCustomCategory(
+            name: name.trim(),
+            description: description.trim(),
+            color: color,
+          );
+      if (!ref.mounted) return false;
+      state = state.copyWith(
+        isLoading: false,
+        availableCategories: [...state.availableCategories, category],
+        selectedCategories: {...state.selectedCategories, category.id},
+      );
+      return true;
+    } catch (e) {
+      if (!ref.mounted) return false;
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
 
   void setWakeTime(TimeOfDay time) {
     state = state.copyWith(wakeTime: time);
@@ -128,13 +191,19 @@ class OnboardingController extends Notifier<OnboardingState> {
   }
 
   void setMorningRoutineMinutes(int minutes) {
-    final maxAllowed = max(0, state.grossWakingMinutes - state.windUpRoutineMinutes);
+    final maxAllowed = max(
+      0,
+      state.grossWakingMinutes - state.windUpRoutineMinutes,
+    );
     final clamped = minutes.clamp(0, maxAllowed);
     state = state.copyWith(morningRoutineMinutes: clamped);
   }
 
   void setWindUpRoutineMinutes(int minutes) {
-    final maxAllowed = max(0, state.grossWakingMinutes - state.morningRoutineMinutes);
+    final maxAllowed = max(
+      0,
+      state.grossWakingMinutes - state.morningRoutineMinutes,
+    );
     final clamped = minutes.clamp(0, maxAllowed);
     state = state.copyWith(windUpRoutineMinutes: clamped);
   }
@@ -182,9 +251,7 @@ class OnboardingController extends Notifier<OnboardingState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final repo = ref.read(onboardingRepositoryProvider);
-      await repo.updateProfile(
-        routineMinutes: state.routineMinutes,
-      );
+      await repo.updateProfile(routineMinutes: state.routineMinutes);
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
@@ -237,5 +304,5 @@ class OnboardingController extends Notifier<OnboardingState> {
 
 final onboardingControllerProvider =
     NotifierProvider<OnboardingController, OnboardingState>(
-  OnboardingController.new,
-);
+      OnboardingController.new,
+    );

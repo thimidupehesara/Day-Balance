@@ -1,8 +1,12 @@
+import '../../../shared/widgets/app_page.dart';
+
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -15,10 +19,7 @@ import 'today_controller.dart';
 class ActiveTimerScreen extends ConsumerStatefulWidget {
   final String? initialPlanItemId;
 
-  const ActiveTimerScreen({
-    super.key,
-    this.initialPlanItemId,
-  });
+  const ActiveTimerScreen({super.key, this.initialPlanItemId});
 
   @override
   ConsumerState<ActiveTimerScreen> createState() => _ActiveTimerScreenState();
@@ -42,22 +43,22 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
     PlanItemModel? currentItem;
     if (state.activeItemId != null) {
       currentItem = state.items.cast<PlanItemModel?>().firstWhere(
-            (item) => item?.id == state.activeItemId,
-            orElse: () => null,
-          );
+        (item) => item?.id == state.activeItemId,
+        orElse: () => null,
+      );
     }
     if (currentItem == null && widget.initialPlanItemId != null) {
       currentItem = state.items.cast<PlanItemModel?>().firstWhere(
-            (item) => item?.id == widget.initialPlanItemId,
-            orElse: () => null,
-          );
+        (item) => item?.id == widget.initialPlanItemId,
+        orElse: () => null,
+      );
     }
     if (currentItem == null && state.items.isNotEmpty) {
       currentItem = state.items.first;
     }
 
     if (currentItem == null) {
-      return Scaffold(
+      return AppPage(
         backgroundColor: AppColors.canvas,
         appBar: AppBar(
           backgroundColor: AppColors.canvas,
@@ -97,9 +98,10 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
     if (isOvertime) {
       progress = 1.0;
     } else if (currentItem.plannedSeconds > 0) {
-      progress = ((currentItem.plannedSeconds - remainingSec) /
-              currentItem.plannedSeconds)
-          .clamp(0.0, 1.0);
+      progress =
+          ((currentItem.plannedSeconds - remainingSec) /
+                  currentItem.plannedSeconds)
+              .clamp(0.0, 1.0);
     } else {
       progress = 0.0;
     }
@@ -108,8 +110,9 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
         ? TodayTimerState.formatOvertime(overtimeSec)
         : TodayTimerState.formatCountdown(remainingSec);
 
-    final plannedFormatted =
-        TodayTimerState.formatDuration(currentItem.plannedSeconds);
+    final plannedFormatted = TodayTimerState.formatDuration(
+      currentItem.plannedSeconds,
+    );
 
     // Status / detail subtitle
     final String detailSubtitle;
@@ -129,10 +132,11 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
       detailSubtitle = 'Paused · $usedString used';
     }
 
-    final otherItems =
-        state.items.where((i) => i.id != currentItem!.id).toList();
+    final otherItems = state.items
+        .where((i) => i.id != currentItem!.id)
+        .toList();
 
-    return Scaffold(
+    return AppPage(
       backgroundColor: AppColors.canvas,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -253,8 +257,7 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
                 // Center Circular Ring Timer Dial (280 x 280)
                 Center(
                   child: Semantics(
-                    label:
-                        'Timer for ${currentItem.categoryName}: $timeString',
+                    label: 'Timer for ${currentItem.categoryName}: $timeString',
                     child: SizedBox(
                       width: 280,
                       height: 280,
@@ -354,7 +357,7 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
                               isRunning ? 'Pause' : 'Resume',
                               style: const TextStyle(
                                 fontFamily: AppTextStyles.fontFamily,
-                                color: AppColors.white,
+                                color: AppColors.textOnPrimary,
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -438,8 +441,9 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
                   // Category Cards Row
                   Row(
                     children: otherItems.map((item) {
-                      final itemColor =
-                          AppColors.colorForCategory(item.categoryId);
+                      final itemColor = AppColors.colorForCategory(
+                        item.categoryId,
+                      );
                       final icon = AppIcons.iconForCategory(item.categoryId);
 
                       return Expanded(
@@ -460,20 +464,20 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
                               },
                               borderRadius: BorderRadius.circular(16),
                               child: Container(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: itemColor,
+                                  color: Color.alphaBlend(
+                                    itemColor.withValues(alpha: .12),
+                                    AppColors.surface,
+                                  ),
                                 ),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      icon,
-                                      size: 22,
-                                      color: AppColors.text,
-                                    ),
+                                    Icon(icon, size: 22, color: AppColors.text),
                                     const SizedBox(height: 8),
                                     Text(
                                       item.categoryName,
@@ -524,12 +528,14 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
     required TodayTimerState state,
   }) {
     final activeRemainingSec = state.getRemainingSecondsForItem(activeItem);
-    final activeRemainingStr =
-        TodayTimerState.formatShort(math.max(0, activeRemainingSec));
+    final activeRemainingStr = TodayTimerState.formatShort(
+      math.max(0, activeRemainingSec),
+    );
 
     final targetRemainingSec = state.getRemainingSecondsForItem(targetItem);
-    final targetRemainingStr =
-        TodayTimerState.formatShort(math.max(0, targetRemainingSec));
+    final targetRemainingStr = TodayTimerState.formatShort(
+      math.max(0, targetRemainingSec),
+    );
 
     SwitchSheet.show(
       context,

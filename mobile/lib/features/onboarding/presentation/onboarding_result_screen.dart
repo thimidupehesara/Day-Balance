@@ -1,6 +1,9 @@
+import '../../../shared/widgets/app_page.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -16,7 +19,7 @@ class OnboardingResultScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(onboardingControllerProvider);
 
-    return Scaffold(
+    return AppPage(
       backgroundColor: AppColors.backgroundCream,
       body: SafeArea(
         child: Column(
@@ -69,10 +72,7 @@ class OnboardingResultScreen extends ConsumerWidget {
                     const SizedBox(height: 32),
 
                     // Headline block
-                    const Text(
-                      'You have',
-                      style: AppTextStyles.h1,
-                    ),
+                    const Text('You have', style: AppTextStyles.h1),
                     const SizedBox(height: 8),
                     Text(
                       state.netHoursFormatted,
@@ -144,20 +144,14 @@ class _BreakdownRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _BreakdownRow({
-    required this.label,
-    required this.value,
-  });
+  const _BreakdownRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.body14,
-        ),
+        Text(label, style: AppTextStyles.body14),
         Text(
           value,
           style: const TextStyle(

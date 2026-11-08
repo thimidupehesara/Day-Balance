@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 
@@ -19,6 +20,24 @@ class Category {
     required this.icon,
     required this.sortOrder,
   });
+
+  factory Category.fromJson(Map<String, dynamic> json) {
+    final id = json['id'] as String;
+    final known = kCategories.where((c) => c.id == id);
+    return Category(
+      id: id,
+      name: json['name'] as String,
+      description: json['description'] as String? ?? '',
+      color: Color(
+        int.parse(
+          'FF${(json['color'] as String).replaceAll('#', '')}',
+          radix: 16,
+        ),
+      ),
+      icon: known.isEmpty ? Icons.category_outlined : known.first.icon,
+      sortOrder: json['sortOrder'] as int? ?? 100,
+    );
+  }
 }
 
 const List<Category> kCategories = [

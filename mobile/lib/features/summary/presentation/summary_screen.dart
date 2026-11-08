@@ -1,8 +1,12 @@
+import '../../../shared/widgets/app_page.dart';
+
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -48,14 +52,12 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
     final state = ref.watch(summaryControllerProvider);
     final controller = ref.read(summaryControllerProvider.notifier);
 
-    return Scaffold(
+    return AppPage(
       backgroundColor: AppColors.backgroundCream,
       body: SafeArea(
         child: state.isLoading && state.summary == null
             ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primarySage,
-                ),
+                child: CircularProgressIndicator(color: AppColors.primarySage),
               )
             : RefreshIndicator(
                 color: AppColors.primarySage,
@@ -88,7 +90,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                               },
                             ),
                             const SizedBox(width: 8),
-                            const Text(
+                            const Expanded(child: Text(
                               'Your day, in balance',
                               style: TextStyle(
                                 fontFamily: AppTextStyles.fontFamily,
@@ -96,7 +98,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.text,
                               ),
-                            ),
+                            )),
                           ],
                         ),
                       ),
@@ -178,15 +180,16 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
   /// Right: breathing room "30m" "left as breathing room" (or overtime)
   Widget _buildBigStatsRow(PlanSummaryModel summary) {
     final actualStr = SummaryState.formatDuration(summary.totalActualSeconds);
-    final plannedStr =
-        SummaryState.formatDuration(summary.totalPlannedSeconds);
+    final plannedStr = SummaryState.formatDuration(summary.totalPlannedSeconds);
 
     final isOver = summary.isOverBudget;
     final diffSeconds = isOver
         ? summary.overBudgetSeconds
         : summary.breathingRoomSeconds;
     final diffStr = SummaryState.formatShort(diffSeconds);
-    final diffSubtitle = isOver ? 'over planned time' : 'left as breathing room';
+    final diffSubtitle = isOver
+        ? 'over planned time'
+        : 'left as breathing room';
 
     return Row(
       children: [
@@ -253,7 +256,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
           width: 16,
           height: 6,
           decoration: BoxDecoration(
-            color: const Color(0xFFDEDED8),
+            color: AppColors.divider,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -303,8 +306,14 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
         final plannedStr = SummaryState.formatDuration(cat.plannedSeconds);
         final actualStr = SummaryState.formatDuration(cat.actualSeconds);
 
-        final plannedFraction = (cat.plannedSeconds / maxDuration).clamp(0.0, 1.0);
-        final actualFraction = (cat.actualSeconds / maxDuration).clamp(0.0, 1.0);
+        final plannedFraction = (cat.plannedSeconds / maxDuration).clamp(
+          0.0,
+          1.0,
+        );
+        final actualFraction = (cat.actualSeconds / maxDuration).clamp(
+          0.0,
+          1.0,
+        );
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -383,17 +392,13 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFE0E8DB),
+        color: AppColors.sageContainer,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            AppIcons.info,
-            size: 20,
-            color: AppColors.primarySage,
-          ),
+          const Icon(AppIcons.info, size: 20, color: AppColors.primarySage),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -461,7 +466,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
   /// Bottom Navigation Bar matching Today and Summary screens
   Widget _buildBottomNav(BuildContext context) {
     return Container(
-      color: const Color(0xFFEEE8DC),
+      color: AppColors.paper,
       padding: const EdgeInsets.only(top: 8, bottom: 20, left: 16, right: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

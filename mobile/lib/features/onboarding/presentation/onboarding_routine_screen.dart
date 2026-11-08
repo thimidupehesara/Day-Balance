@@ -1,6 +1,9 @@
+import '../../../shared/widgets/app_page.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -25,11 +28,11 @@ class OnboardingRoutineScreen extends ConsumerWidget {
     final rStr = rHours > 0 && rMins > 0
         ? '${rHours}h ${rMins}m'
         : rHours > 0
-            ? '${rHours}h'
-            : '${rMins}m';
+        ? '${rHours}h'
+        : '${rMins}m';
     final topCardText = '${grossHours}h awake − $rStr of routines';
 
-    return Scaffold(
+    return AppPage(
       backgroundColor: AppColors.backgroundCream,
       body: SafeArea(
         child: Column(
@@ -84,7 +87,7 @@ class OnboardingRoutineScreen extends ConsumerWidget {
                             const Icon(
                               AppIcons.morningRoutine,
                               size: 24,
-                              color: AppColors.text,
+                              color: AppColors.setupAccent,
                             ),
                             const SizedBox(width: 12),
                             const Expanded(
@@ -92,7 +95,7 @@ class OnboardingRoutineScreen extends ConsumerWidget {
                                 'Morning routine',
                                 style: TextStyle(
                                   fontFamily: AppTextStyles.fontFamily,
-                                  fontSize: 18,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.text,
                                 ),
@@ -101,7 +104,8 @@ class OnboardingRoutineScreen extends ConsumerWidget {
                             PillStepper(
                               label: '${state.morningRoutineMinutes} min',
                               canDecrement: state.morningRoutineMinutes >= 15,
-                              canIncrement: state.routineMinutes + 15 <=
+                              canIncrement:
+                                  state.routineMinutes + 15 <=
                                   state.grossWakingMinutes,
                               onDecrement: () {
                                 controller.setMorningRoutineMinutes(
@@ -137,7 +141,7 @@ class OnboardingRoutineScreen extends ConsumerWidget {
                             const Icon(
                               AppIcons.windUpRoutine,
                               size: 24,
-                              color: AppColors.text,
+                              color: AppColors.setupAccent,
                             ),
                             const SizedBox(width: 12),
                             const Expanded(
@@ -145,7 +149,7 @@ class OnboardingRoutineScreen extends ConsumerWidget {
                                 'Wind-up routine',
                                 style: TextStyle(
                                   fontFamily: AppTextStyles.fontFamily,
-                                  fontSize: 18,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.text,
                                 ),
@@ -154,7 +158,8 @@ class OnboardingRoutineScreen extends ConsumerWidget {
                             PillStepper(
                               label: '${state.windUpRoutineMinutes} min',
                               canDecrement: state.windUpRoutineMinutes >= 15,
-                              canIncrement: state.routineMinutes + 15 <=
+                              canIncrement:
+                                  state.routineMinutes + 15 <=
                                   state.grossWakingMinutes,
                               onDecrement: () {
                                 controller.setWindUpRoutineMinutes(
@@ -185,7 +190,12 @@ class OnboardingRoutineScreen extends ConsumerWidget {
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: AppColors.cardWarm,
+                        gradient: const LinearGradient(
+                          colors: [AppColors.paper, AppColors.surface],
+                        ),
+                        border: Border.all(
+                          color: AppColors.outline.withValues(alpha: .3),
+                        ),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -195,17 +205,14 @@ class OnboardingRoutineScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            topCardText,
-                            style: AppTextStyles.body14,
-                          ),
+                          Text(topCardText, style: AppTextStyles.body14),
                           const SizedBox(height: 8),
                           Text(
                             '${state.netHoursFormatted} to plan',
                             style: const TextStyle(
-                              fontFamily: AppTextStyles.fontFamily,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
+                              fontFamily: 'serif',
+                              fontSize: 30,
+                              fontWeight: FontWeight.w400,
                               color: AppColors.primarySage,
                             ),
                           ),

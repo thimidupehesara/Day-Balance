@@ -1,6 +1,9 @@
+import '../../../shared/widgets/app_page.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/app_back_button.dart';
@@ -47,7 +50,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    final success = await ref.read(authControllerProvider.notifier).register(
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .register(
           email: _emailController.text.trim(),
           password: _passwordController.text,
           displayName: _nameController.text.trim(),
@@ -58,11 +63,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (success) {
       context.go('/onboarding/schedule');
     } else {
-      final error = ref.read(authControllerProvider).errorMessage ?? 'Registration failed';
+      final error =
+          ref.read(authControllerProvider).errorMessage ??
+          'Registration failed';
       setState(() {
         if (error.contains('already registered') || error.contains('409')) {
           _generalError = 'This email is already in use. Please log in or use another email.';
-        } else if (error.contains('network') || error.contains('connect') || error.contains('SocketException')) {
+        } else if (error.contains('network') ||
+            error.contains('connect') ||
+            error.contains('SocketException')) {
           _generalError = 'No internet connection. Please check your network and try again.';
         } else {
           _generalError = error;
@@ -75,7 +84,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
 
-    return Scaffold(
+    return AppPage(
       backgroundColor: AppColors.canvas,
       body: SafeArea(
         child: LayoutBuilder(
@@ -83,9 +92,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
                   child: Form(
                     key: _formKey,
@@ -110,7 +117,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                         const SizedBox(height: 8),
 
-                        // Title: "Start with you." (Heading 32sp Roboto Medium #292E28)
+                        const Text(
+                          'A LITTLE MORE BALANCE',
+                          style: AppTextStyles.eyebrow,
+                        ),
+                        const SizedBox(height: 14),
                         const Text(
                           'Start with you.',
                           style: AppTextStyles.heading,
@@ -135,7 +146,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             decoration: BoxDecoration(
                               color: AppColors.errorContainer,
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: AppColors.error.withAlpha(80)),
+                              border: Border.all(
+                                color: AppColors.error.withAlpha(80),
+                              ),
                             ),
                             child: Text(
                               _generalError!,
@@ -174,7 +187,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             if (val == null || val.trim().isEmpty) {
                               return 'Email is required';
                             }
-                            final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                            final emailRegex = RegExp(
+                              r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                            );
                             if (!emailRegex.hasMatch(val.trim())) {
                               return 'Enter a valid email address';
                             }
@@ -238,7 +253,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             Expanded(
                               child: GestureDetector(
                                 onTap: () {
-                                  setState(() => _termsAccepted = !_termsAccepted);
+                                  setState(
+                                    () => _termsAccepted = !_termsAccepted,
+                                  );
                                 },
                                 child: Text(
                                   'I agree to the Terms of use and Privacy policy.',

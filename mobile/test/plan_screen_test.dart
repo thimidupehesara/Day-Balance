@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:day_balance/features/planning/presentation/plan_controller.dart';
 import 'package:day_balance/features/planning/presentation/plan_screen.dart';
+import 'package:day_balance/core/constants/categories.dart';
 
 class TestPlanController extends PlanController {
   final PlanState _initialState;
@@ -28,6 +29,21 @@ void main() {
   }
 
   group('PlanScreen Widget Tests', () {
+    testWidgets('renders a persisted custom category with adjustable time', (tester) async {
+      const custom = Category(id: 'custom:user:guitar', name: 'Guitar practice', description: 'Learning songs',
+        color: Color(0xFFA9CEC6), icon: Icons.category_outlined, sortOrder: 100);
+      await tester.pumpWidget(createWidget(const PlanState(wakingSeconds: 7200,
+        availableCategories: [custom], selectedCategoryIds: ['custom:user:guitar'],
+        plannedSeconds: {'custom:user:guitar': 1800})));
+      await tester.pumpAndSettle();
+      expect(find.text('Guitar practice'), findsOneWidget);
+      expect(find.text('0h 30m'), findsOneWidget);
+      final container = ProviderScope.containerOf(tester.element(find.byType(PlanScreen)));
+      container.read(planControllerProvider.notifier).incrementCategory(custom.id);
+      await tester.pumpAndSettle();
+      expect(container.read(planControllerProvider).plannedSeconds[custom.id], 3600);
+      expect(tester.takeException(), isNull);
+    });
     testWidgets('renders normal planning state (08_daily_planning)',
         (tester) async {
       const state = PlanState(

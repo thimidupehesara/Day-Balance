@@ -1,5 +1,8 @@
+import '../../shared/widgets/app_page.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
@@ -22,13 +25,10 @@ class _PlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(title: Text(title)),
       body: Center(
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
+        child: Text(title, style: Theme.of(context).textTheme.headlineMedium),
       ),
     );
   }
@@ -42,18 +42,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/welcome',
       name: 'welcome',
-      pageBuilder: (context, state) => AppTransitions.sharedAxis(
-        state: state,
-        child: const WelcomeScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          AppTransitions.sharedAxis(state: state, child: const WelcomeScreen()),
     ),
     GoRoute(
       path: '/login',
       name: 'login',
-      pageBuilder: (context, state) => AppTransitions.sharedAxis(
-        state: state,
-        child: const LoginScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          AppTransitions.sharedAxis(state: state, child: const LoginScreen()),
     ),
     GoRoute(
       path: '/register',
@@ -110,34 +106,26 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/home',
       name: 'home',
-      pageBuilder: (context, state) => AppTransitions.fadeThrough(
-        state: state,
-        child: const TodayScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          AppTransitions.fadeThrough(state: state, child: const TodayScreen()),
     ),
     GoRoute(
       path: '/today',
       name: 'today',
-      pageBuilder: (context, state) => AppTransitions.fadeThrough(
-        state: state,
-        child: const TodayScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          AppTransitions.fadeThrough(state: state, child: const TodayScreen()),
     ),
     GoRoute(
       path: '/plan',
       name: 'plan',
-      pageBuilder: (context, state) => AppTransitions.sharedAxis(
-        state: state,
-        child: const PlanScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          AppTransitions.sharedAxis(state: state, child: const PlanScreen()),
     ),
     GoRoute(
       path: '/plan/edit',
       name: 'edit-plan',
-      pageBuilder: (context, state) => AppTransitions.modal(
-        state: state,
-        child: const EditPlanScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          AppTransitions.modal(state: state, child: const EditPlanScreen()),
     ),
     GoRoute(
       path: '/timer',
@@ -153,10 +141,8 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/summary',
       name: 'summary',
-      pageBuilder: (context, state) => AppTransitions.sharedAxis(
-        state: state,
-        child: const SummaryScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          AppTransitions.sharedAxis(state: state, child: const SummaryScreen()),
     ),
     GoRoute(
       path: '/settings',

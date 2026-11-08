@@ -1,40 +1,40 @@
 import 'package:flutter/material.dart';
 
-/// Centralized design tokens from Figma Style Guide:
+/// Approved Day-Balance evening palette:
 /// Android · Material Design 3 · 360 × 800 dp · Flat, warm, quietly purposeful.
 class AppColors {
   AppColors._();
 
   // 01 / Palette (Base)
-  static const Color canvas = Color(0xFFF8F5EF); // #F8F5EF Canvas background
-  static const Color surface = Color(0xFFFFFCF7); // #FFFCF7 Surface
+  static const Color canvas = Color(0xFF11252D); // Canvas background
+  static const Color surface = Color(0xFF1B343D); // Surface
   static const Color text = Color(
-    0xFF292E28,
-  ); // #292E28 Primary text / headings
+    0xFFFFF5E7,
+  ); // Primary text / headings
   static const Color secondary = Color(
-    0xFF62675D,
-  ); // #62675D Secondary text / subtitles
+    0xFFBECDCA,
+  ); // Secondary text / subtitles
   static const Color primarySage = Color(
-    0xFF49664D,
-  ); // #49664D Primary sage brand / buttons
-  static const Color outline = Color(0xFF85897D); // #85897D Border outline
+    0xFFE3EADB,
+  ); // Primary sage brand / buttons
+  static const Color outline = Color(0xFF658079); // Border outline
   static const Color error = Color(
-    0xFFA43B32,
-  ); // #A43B32 Error text / error border
+    0xFFF5B6A1,
+  ); // Error text / error border
 
   // Containers & Details
-  static const Color paper = Color(0xFFEEE8DC); // #EEE8DC Paper
+  static const Color paper = Color(0xFF253F42); // Paper
   static const Color sageContainer = Color(
-    0xFFE0E8DB,
-  ); // #E0E8DB Sage container
-  static const Color divider = Color(0xFFDDDCD2); // #DDDCD2 Divider
+    0xFF2D4942,
+  ); // Sage container
+  static const Color divider = Color(0xFF385059); // Divider
   static const Color timerTrack = Color(
-    0xFFE5E2D9,
-  ); // #E5E2D9 Circular timer track
+    0xFF30484F,
+  ); // Circular timer track
   static const Color errorContainer = Color(
-    0xFFF6E2DE,
-  ); // #F6E2DE Error container
-  static const Color white = Color(0xFFFFFFFF); // #FFFFFF White
+    0xFF4A3232,
+  ); // Error container
+  static const Color white = Color(0xFFFFFFFF); // White
 
   // Semantic & Backwards Compatibility Aliases
   static const Color primary = primarySage;
@@ -46,7 +46,7 @@ class AppColors {
   static const Color surfaceVariant = paper;
   static const Color textPrimary = text;
   static const Color textSecondary = secondary;
-  static const Color textOnPrimary = white;
+  static const Color textOnPrimary = setupButtonText;
 
   // 01 / Palette (Categories - matching Figma style guide)
   static const Color academic = Color(0xFFD4DEE5); // #D4DEE5
@@ -82,7 +82,7 @@ class AppColors {
   static const Color success = primarySage;
   static const Color warning = Color(0xFFEBD3BC);
   static const Color overtime = error;
-  static const Color disabled = Color(0xFFDDDCD2);
+  static const Color disabled = Color(0xFF385059);
 
   // 02 / Sky & Celestial Animation Tokens (Setting Up Screen)
   static const Color setupBackground = Color(0xFF11252D);

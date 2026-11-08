@@ -40,7 +40,7 @@ class AppPrimaryButton extends StatelessWidget {
           onPressed: canPress ? onPressed : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: backgroundColor ?? AppColors.primarySage,
-            foregroundColor: foregroundColor ?? AppColors.white,
+            foregroundColor: foregroundColor ?? AppColors.textOnPrimary,
             disabledBackgroundColor:
                 disabledBackgroundColor ?? AppColors.disabled,
             disabledForegroundColor:
@@ -58,14 +58,18 @@ class AppPrimaryButton extends StatelessWidget {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.secondary,
+                    ),
                   ),
                 )
               : Text(
                   text,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.button.copyWith(
-                    color: canPress ? foregroundColor : disabledForegroundColor,
+                    color: canPress
+                        ? foregroundColor ?? AppColors.textOnPrimary
+                        : disabledForegroundColor ?? AppColors.secondary,
                   ),
                 ),
         ),

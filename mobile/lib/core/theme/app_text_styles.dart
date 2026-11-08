@@ -7,6 +7,12 @@ import 'app_colors.dart';
 class AppTextStyles {
   AppTextStyles._();
 
+  static const TextStyle eyebrow = TextStyle(
+    fontSize: 11,
+    letterSpacing: 2,
+    color: AppColors.setupAccent,
+    height: 1.5,
+  );
   static const String fontFamily = 'Roboto';
   static const String monoFontFamily = 'RobotoMono';
   // Android's bundled serif face; no runtime font download for onboarding.
@@ -24,27 +30,30 @@ class AppTextStyles {
 
   // Display 40/44 (Roboto Medium)
   static const TextStyle display = TextStyle(
-    fontFamily: _fontFamily,
+    fontFamily: 'serif',
+    fontFamilyFallback: ['Georgia', 'Times New Roman'],
     fontSize: 40,
     height: 44 / 40,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w400,
     color: AppColors.text,
   );
 
   // Heading 32/38 (Roboto Medium) - Login Title "Good to see you."
   static const TextStyle heading = TextStyle(
-    fontFamily: _fontFamily,
+    fontFamily: 'serif',
+    fontFamilyFallback: ['Georgia', 'Times New Roman'],
     fontSize: 32,
     height: 38 / 32,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w400,
     color: AppColors.text,
   );
 
   // Title 22 (Roboto Medium)
   static const TextStyle title = TextStyle(
-    fontFamily: _fontFamily,
+    fontFamily: 'serif',
+    fontFamilyFallback: ['Georgia', 'Times New Roman'],
     fontSize: 22,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w400,
     color: AppColors.text,
   );
 
@@ -81,7 +90,7 @@ class AppTextStyles {
     fontSize: 14,
     height: 20 / 14,
     fontWeight: FontWeight.w600,
-    color: AppColors.white,
+    color: AppColors.textOnPrimary,
   );
 
   // Outlined Button text: Roboto Semibold 14/20

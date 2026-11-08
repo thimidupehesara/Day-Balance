@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_icons.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -28,32 +29,36 @@ class TapField extends StatelessWidget {
       label: '$label: $value',
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(13),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             // Outlined field container
             Container(
-              height: 56,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              constraints: const BoxConstraints(minHeight: 64),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
               decoration: BoxDecoration(
+                color: AppColors.surface,
                 border: Border.all(color: AppColors.outline, width: 1),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(13),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    value,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.text,
-                      fontSize: 16,
+                  Expanded(
+                    child: Text(
+                      value,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: AppColors.text,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Icon(
                     icon ?? AppIcons.dropdown,
                     size: 20,
-                    color: AppColors.secondary,
+                    color: AppColors.setupAccent,
                   ),
                 ],
               ),
