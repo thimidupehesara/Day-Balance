@@ -16,8 +16,8 @@
 | 09 Today Home | Done | `mobile/lib/features/timer/presentation/today_screen.dart` |
 | 10 Active Timer | Done | `mobile/lib/features/timer/presentation/active_timer_screen.dart` |
 | 11 Switch Sheet | Done | `mobile/lib/features/timer/presentation/switch_sheet.dart` |
-| 12 Edit Plan | Done | `mobile/lib/features/planning/presentation/edit_plan_screen.dart` |
-| 13 End-of-Day Summary | Done | `mobile/lib/features/summary/presentation/summary_screen.dart` |
+| 12 Edit Plan | Missing in current checkout; Today links to Daily Planning | `mobile/lib/features/planning/presentation/plan_screen.dart` |
+| 13 End-of-Day Summary | Router placeholder; feature directory contains scaffolding only | `mobile/lib/core/router/app_router.dart` |
 | 14 History Week | Not started | `mobile/lib/features/history/` |
 | 15 Settings | Not started | `mobile/lib/features/settings/` |
 | 16 Offline & Error States | Done | `mobile/lib/shared/widgets/error_state_view.dart` |
@@ -26,6 +26,7 @@
 - Build History Week screen (14) or Settings screen (15).
 
 ## Known Issues
+- Current backend `npm test` includes live DB/API scripts; `test:live` is absent despite setup docs. No database checks run during orientation.
 - Local notifications for category timer reaching zero are not wired into the app yet.
 - Neon Object Storage S3 client requires `forcePathStyle: true` due to path-style addressing.
 - Auth endpoints enforce rate-limiting (15 req/15 min in prod, relaxed in development/test).

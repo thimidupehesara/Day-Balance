@@ -1,18 +1,36 @@
 # Day-Balance
 
-Daily time-budgeting app (Flutter + Node.js + Neon PostgreSQL).
+Daily time-budgeting app: Flutter in `mobile/`; Node.js, Express, TypeScript and Drizzle in `backend/`; Neon PostgreSQL.
 
-## Commands
-- Backend: `cd backend && npm run dev` (:3000) | `npm test` (unit) | `npm run test:live` (live)
-- Mobile: `cd mobile && flutter analyze && flutter test && flutter run`
+## Run
+- Backend: in `backend/`, run `npm install`, then `npm run dev` (port 3000); requires a configured local `.env`.
+- Mobile: in `mobile/`, run `flutter pub get`.
+- Chrome: `flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:3000`.
+- Android phone: enable USB debugging, connect and authorize the phone; use `adb devices` and `flutter devices` to find its ID.
+- Run `adb -s <deviceId> reverse tcp:3000 tcp:3000`, then in `mobile/` run `flutter run -d <deviceId> --dart-define=API_BASE_URL=http://localhost:3000`.
 
-## Figma Rule
-Before building or changing a screen: find its row in `design/FIGMA_LINKS.md`, look at the PNG, read the `.dart` export, then build cleanly with our theme tokens and shared widgets, responsive. Never paste exported code, never import from `/design`, never edit `/design`. Do not call the Figma MCP unless I ask. If a screen has no design, build from my written spec and flag it.
+## Figma
+- Before building or changing a screen, find its row in `design/FIGMA_LINKS.md`, look at the PNG and read the `.dart` export in `design/exports/`.
+- Build cleanly with theme tokens in `mobile/lib/core/theme` and shared widgets in `mobile/lib/shared/widgets`; make layouts responsive.
+- Never paste exported code, import from `/design`, or edit `/design`. Do not use the Figma MCP.
+- If no design exists, build from the user's written spec and flag it in the report.
 
-## Docs Protocol
-At the end of a task, update only `docs/PROGRESS.md`: the status table, 'Next step', 'Known issues' (3 lines of changes at most). Never create a document for a screen, widget or feature. Do not repeat the same information in two files. Do not paste test output into docs. Docs work must stay under 10% of a task.
+## Safety
+- Never run `DROP`, `TRUNCATE`, or `DELETE` without `WHERE`.
+- Never commit `.env` files or print secrets.
+- Test users must use `@example.com` and be cleaned up with scoped deletion.
+- Inspect test scripts before execution; do not run database-dependent commands when database access is prohibited.
 
-## Rules
-- Safety: Never run destructive DB commands (DROP, TRUNCATE, DELETE without WHERE). Test users use `@example.com` and must be deleted.
-- Git: One feature branch per task (`feature/<name>`). Never push to `main`. Never run `git push` yourself; report the branch name to push.
-- Verification: Run each check once per task (`flutter analyze`, `flutter test`, `npx tsc --noEmit`, `npm test`, `npm run build`). Run `npm run test:live` once at the end of backend tasks. Do not use the schedule tool. Keep reports under 25 lines.
+## Git
+- Use one `feature/<name>` branch per task; make small commits with useful messages. Never commit directly to `main`.
+- Stage only task changes; preserve unrelated work. Never push to `main` or run `git push`; the user pushes and merges.
+- Report the branch name for the user to push.
+
+## Quiet verification
+- Run each applicable check once per task: in `mobile/`, `flutter analyze` and `flutter test`; in `backend/`, `npx tsc --noEmit`, `npm test`, and `npm run build`.
+- Safety takes precedence: skip prohibited checks and report why. Documentation-only tasks need only content/diff checks.
+- Do not print long banners. Keep the final report under 20 lines. Do not use the schedule tool.
+
+## Docs
+- Update only `docs/PROGRESS.md`: status table, Next Step, and Known Issues, with at most 3 lines of changes per task.
+- Never create a document per screen, widget, or feature; do not duplicate information or paste test output into docs.
