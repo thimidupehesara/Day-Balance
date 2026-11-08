@@ -26,6 +26,7 @@
 - Build History Week screen (14) or Settings screen (15).
 
 ## Known Issues
+- Local `trailer/` and generated `mobile/android/build/` are intentionally ignored by Git.
 - Current backend `npm test` includes live DB/API scripts; `test:live` is absent despite setup docs. No database checks run during orientation.
 - Local notifications for category timer reaching zero are not wired into the app yet.
 - Neon Object Storage S3 client requires `forcePathStyle: true` due to path-style addressing.
