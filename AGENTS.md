@@ -1,50 +1,36 @@
 # Day-Balance
 
-A daily time-budgeting mobile app (Flutter + Node.js + PostgreSQL).
+Daily time-budgeting app: Flutter in `mobile/`; Node.js, Express, TypeScript and Drizzle in `backend/`; Neon PostgreSQL.
 
-**Read `/docs/PROGRESS.md` first.** Report which items are IN PROGRESS and wait for the user to confirm before continuing. Never start PLANNED or PAUSED items unless the user's current message asks for them. Build ONLY what the user's current message requests; if more seems needed, ask. Follow the doc template. Update docs as you work.
+## Run
+- Backend: in `backend/`, run `npm install`, then `npm run dev` (port 3000); requires a configured local `.env`.
+- Mobile: in `mobile/`, run `flutter pub get`.
+- Chrome: `flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:3000`.
+- Android phone: enable USB debugging, connect and authorize the phone; use `adb devices` and `flutter devices` to find its ID.
+- Run `adb -s <deviceId> reverse tcp:3000 tcp:3000`, then in `mobile/` run `flutter run -d <deviceId> --dart-define=API_BASE_URL=http://localhost:3000`.
 
-## Status Definitions
-- **PLANNED**: Not started.
-- **DRAFT**: Code written and compiles, but NOT run or tested end-to-end.
-- **DONE**: Verified by actually running it (e.g. a real API call or emulator test).
-- **PAUSED**: Deliberately stopped, waiting on something (design, decision).
+## Figma
+- Before building or changing a screen, find its row in `design/FIGMA_LINKS.md`, look at the PNG and read the `.dart` export in `design/exports/`.
+- Build cleanly with theme tokens in `mobile/lib/core/theme` and shared widgets in `mobile/lib/shared/widgets`; make layouts responsive.
+- Never paste exported code, import from `/design`, or edit `/design`. Do not use the Figma MCP.
+- If no design exists, build from the user's written spec and flag it in the report.
 
-## Stack
-- **Mobile** (`/mobile`): Flutter 3.29.0, Dart 3.7.0, Material 3, flutter_riverpod, go_router, dio
-- **Backend** (`/backend`): Node.js, Express, TypeScript (strict), Drizzle ORM, PostgreSQL on Neon, JWT auth
-- **Docs** (`/docs`): Handoff documentation for AI continuity
-- **Design** (`/design`): Figma exports (PNGs in `/design/exports/png/`, CodeTea Flutter `.dart` exports in `/design/exports/dart/`), links (`design/FIGMA_LINKS.md`), and tokens
+## Safety
+- Never run `DROP`, `TRUNCATE`, or `DELETE` without `WHERE`.
+- Never commit `.env` files or print secrets.
+- Test users must use `@example.com` and be cleaned up with scoped deletion.
+- Inspect test scripts before execution; do not run database-dependent commands when database access is prohibited.
 
-## Figma Workflow Rule
-Before building or changing ANY screen, in this order: (1) find its row in design/FIGMA_LINKS.md; (2) look at the PNG; (3) read the .dart export fully; (4) read the live Figma frame through the Figma MCP using the link in that row (read only that frame, not the whole file); (5) only then plan and build. Use the data as the exact source for sizes, spacing, colors, fonts, text, icons and structure, but rebuild the screen cleanly using our theme tokens (mobile/lib/core/theme) and shared widgets (mobile/lib/shared/widgets), and make it responsive. Never paste exported code unchanged, never import from /design, never edit /design. If the Figma MCP fails or is rate limited, continue with the PNG and .dart export, and mention it in the report. Do not stop to ask. For screens with no PNG, use the .dart export only. If a screen has no design row, build it from the written spec in the task, and flag it in the report. If something is unclear, make the most reasonable choice and list assumptions in the report. After building, run the screen and compare it with the PNG, and list any differences.
+## Git
+- Use one `feature/<name>` branch per task; make small commits with useful messages. Never commit directly to `main`.
+- Stage only task changes; preserve unrelated work. Never push to `main` or run `git push`; the user pushes and merges.
+- Report the branch name for the user to push.
 
-## Database Safety Rule
-Never run destructive commands (DROP, TRUNCATE, or DELETE without a WHERE clause) without user approval. Test users must use `@example.com` emails and be deleted at the end of each test run. Do not stop to ask about the Neon database branch.
+## Quiet verification
+- Run each applicable check once per task: in `mobile/`, `flutter analyze` and `flutter test`; in `backend/`, `npx tsc --noEmit`, `npm test`, and `npm run build`.
+- Safety takes precedence: skip prohibited checks and report why. Documentation-only tasks need only content/diff checks.
+- Do not print long banners. Keep the final report under 20 lines. Do not use the schedule tool.
 
-## Quick commands
-```bash
-# Backend
-cd backend && cp .env.example .env   # fill in your secrets
-npm install && npm run dev            # start API on :3000
-
-# Mobile
-cd mobile && flutter pub get
-flutter analyze                       # lint check
-flutter run                           # launch on emulator/device
-
-# Database
-cd backend
-npm run db:generate                   # generate migration from schema
-npm run db:migrate                    # apply migration to Neon DB
-npm run db:seed                       # seed the 7 categories
-```
-
-## Protocol for AI tools
-Every screen, component, and backend module has a doc in `/docs/`. Before implementing anything, create/update its doc with a "Plan" checklist. After finishing, replace "Plan" with "Done" and update `PROGRESS.md`.
-
-## Git Workflow Rule
-- Checkout to a new feature branch (`feature/<screen-name>`) before building each screen or feature.
-- When finished, stage all files and commit with a clear, descriptive commit message.
-- **NEVER push to remote (`git push`) yourself.**
-- Report the branch name to the user so they can push manually and tell you when to continue.
+## Docs
+- Update only `docs/PROGRESS.md`: status table, Next Step, and Known Issues, with at most 3 lines of changes per task.
+- Never create a document per screen, widget, or feature; do not duplicate information or paste test output into docs.
