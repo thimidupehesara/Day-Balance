@@ -21,13 +21,15 @@
 | 14 History Week | Not started | `mobile/lib/features/history/` |
 | 15 Settings | Not started | `mobile/lib/features/settings/` |
 | 16 Offline & Error States | Done | `mobile/lib/shared/widgets/error_state_view.dart` |
+| Product launch trailer | Done; landscape, silent, and portrait exports verified | `trailer/` |
 
 ## Next Step
-- Build History Week screen (14) or Settings screen (15).
+- Review trailer exports, then build History Week screen (14) or Settings screen (15).
 
 ## Known Issues
 - Local `trailer/` and generated `mobile/android/build/` are intentionally ignored by Git.
 - Current backend `npm test` includes live DB/API scripts; `test:live` is absent despite setup docs. No database checks run during orientation.
+- Trailer feature-branch creation was denied; deliverables remain local and uncommitted.
 - Local notifications for category timer reaching zero are not wired into the app yet.
 - Neon Object Storage S3 client requires `forcePathStyle: true` due to path-style addressing.
 - Auth endpoints enforce rate-limiting (15 req/15 min in prod, relaxed in development/test).
