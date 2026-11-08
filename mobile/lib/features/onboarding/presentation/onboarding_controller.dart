@@ -216,15 +216,18 @@ class OnboardingController extends Notifier<OnboardingState> {
     try {
       final repo = ref.read(onboardingRepositoryProvider);
       await repo.updateUserCategories(state.selectedCategories.toList());
+      if (!ref.mounted) return false;
       await repo.updateProfile(
         wakeTime: _formatTimeOfDay(state.wakeTime),
         bedtime: _formatTimeOfDay(state.bedtime),
         routineMinutes: state.routineMinutes,
         onboardingDone: true,
       );
+      if (!ref.mounted) return false;
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
+      if (!ref.mounted) return false;
       final msg = e.toString().replaceFirst('Exception: ', '');
       state = state.copyWith(isLoading: false, errorMessage: msg);
       return false;

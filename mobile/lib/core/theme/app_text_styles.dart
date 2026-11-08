@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'app_colors.dart';
 
 /// Centralized text style tokens matching Day-Balance Figma Style Guide (02 / TYPE):
@@ -8,6 +9,16 @@ class AppTextStyles {
 
   static const String fontFamily = 'Roboto';
   static const String monoFontFamily = 'RobotoMono';
+  // Android's bundled serif face; no runtime font download for onboarding.
+  static const TextStyle setupHeading = TextStyle(
+    fontFamily: 'serif',
+    fontFamilyFallback: ['Georgia', 'Times New Roman'],
+    fontSize: 37,
+    height: 1.14,
+    letterSpacing: -1.2,
+    fontWeight: FontWeight.w400,
+    color: AppColors.setupForeground,
+  );
   static const String _fontFamily = fontFamily;
   static const String _monoFontFamily = monoFontFamily;
 

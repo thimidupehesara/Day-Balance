@@ -1,31 +1,26 @@
+import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
-
 import 'package:day_balance/features/auth/domain/user_model.dart';
 import 'package:day_balance/features/onboarding/data/onboarding_repository.dart';
 import 'package:day_balance/features/onboarding/presentation/setting_up_screen.dart';
-import 'package:day_balance/features/onboarding/presentation/setting_up_constants.dart';
+import 'package:day_balance/features/onboarding/presentation/setting_up_sky.dart';
 
 class FakeOnboardingRepository extends OnboardingRepository {
   bool shouldFail = false;
   int saveCount = 0;
-  Map<String, dynamic> statsResponse = {
-    'showable': true,
-    'similarCount': 35,
-    'totalUsers': 50,
-  };
-
+  Completer<void>? pending;
   FakeOnboardingRepository() : super(Dio());
-
   @override
-  Future<Map<String, dynamic>> getSimilarRoutines({
-    String? wakeTime,
-    String? bedtime,
-  }) async {
-    return statsResponse;
+  Future<List<String>> updateUserCategories(List<String> categoryIds) async {
+    saveCount++;
+    if (pending != null) await pending!.future;
+    if (shouldFail) throw Exception('Network connection timed out');
+    return categoryIds;
   }
 
   @override
@@ -36,195 +31,197 @@ class FakeOnboardingRepository extends OnboardingRepository {
     bool? onboardingDone,
     String? displayName,
   }) async {
-    if (shouldFail) {
-      throw Exception('Network connection timed out');
-    }
     return UserModel(
       id: 'test-user',
       email: 'test@example.com',
-      displayName: 'Tester',
       wakeTime: wakeTime,
       bedtime: bedtime,
       routineMinutes: routineMinutes,
       onboardingDone: onboardingDone ?? false,
     );
   }
+}
 
-  @override
-  Future<List<String>> updateUserCategories(List<String> categoryIds) async {
-    saveCount++;
-    if (shouldFail) {
-      throw Exception('Network connection timed out');
-    }
-    return categoryIds;
-  }
+Widget loadingTestApp(
+  FakeOnboardingRepository repo, {
+  bool reduced = false,
+  double scale = 1,
+}) {
+  final router = GoRouter(
+    initialLocation: '/setup',
+    routes: [
+      GoRoute(path: '/setup', builder: (_, _) => const SettingUpScreen()),
+      GoRoute(
+        path: '/home',
+        builder: (_, _) => const Scaffold(body: Text('Today Screen')),
+      ),
+      GoRoute(
+        path: '/onboarding/categories',
+        builder: (_, _) => const Scaffold(body: Text('Categories Screen')),
+      ),
+    ],
+  );
+  return ProviderScope(
+    overrides: [onboardingRepositoryProvider.overrideWithValue(repo)],
+    child: MaterialApp.router(
+      routerConfig: router,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          disableAnimations: reduced,
+          textScaler: TextScaler.linear(scale),
+        ),
+        child: child!,
+      ),
+    ),
+  );
+}
+
+Future<void> tapVisible(WidgetTester tester, String label) async {
+  await tester.ensureVisible(find.text(label));
+  await tester.tap(find.text(label));
+  await tester.pumpAndSettle();
 }
 
 void main() {
-  late FakeOnboardingRepository fakeRepo;
-
-  setUp(() {
-    fakeRepo = FakeOnboardingRepository();
+  test('sun and moon use a shared left-to-right rising and setting arc', () {
+    final start = SettingUpSkyPainter.orbit(0, 390, 373);
+    final top = SettingUpSkyPainter.orbit(.5, 390, 373);
+    final end = SettingUpSkyPainter.orbit(1, 390, 373);
+    expect(start.dx, lessThan(top.dx));
+    expect(top.dx, lessThan(end.dx));
+    expect(top.dy, lessThan(start.dy));
+    expect(end.dy, start.dy);
+    expect(
+      SettingUpSkyPainter.orbit(.25, 390, 373).dy,
+      closeTo(SettingUpSkyPainter.orbit(.75, 390, 373).dy, .001),
+    );
   });
 
-  Widget createWidgetUnderTest({
-    GoRouter? customRouter,
-    bool disableAnimations = false,
-  }) {
-    final router = customRouter ??
-        GoRouter(
-          initialLocation: '/onboarding/setting-up',
-          routes: [
-            GoRoute(
-              path: '/onboarding/categories',
-              builder: (context, state) => const Scaffold(body: Text('Categories Screen')),
-            ),
-            GoRoute(
-              path: '/onboarding/setting-up',
-              builder: (context, state) => const SettingUpScreen(),
-            ),
-            GoRoute(
-              path: '/home',
-              builder: (context, state) => const Scaffold(body: Text('Today Screen')),
-            ),
-          ],
-        );
+  testWidgets('fast save still presents every chapter before Continue', (
+    tester,
+  ) async {
+    final repo = FakeOnboardingRepository();
+    await tester.pumpWidget(loadingTestApp(repo));
+    await tester.pump();
+    expect(find.text('KNOW YOUR TIME'), findsOneWidget);
+    expect(find.text('Step into my day'), findsNothing);
+    for (final title in [
+      'CHOOSE WHAT MATTERS',
+      'ONE THING AT A TIME',
+      'LEARN YOUR RHYTHM',
+    ]) {
+      await tester.pump(const Duration(seconds: 4));
+      expect(find.text(title), findsOneWidget);
+      expect(find.text('Step into my day'), findsNothing);
+    }
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pump(const Duration(milliseconds: 100));
+    await tapVisible(tester, 'Step into my day');
+    expect(find.text('Today Screen'), findsOneWidget);
+    expect(repo.saveCount, 1);
+  });
 
-    return ProviderScope(
-      overrides: [
-        onboardingRepositoryProvider.overrideWithValue(fakeRepo),
-      ],
-      child: MediaQuery(
-        data: MediaQueryData(disableAnimations: disableAnimations),
-        child: MaterialApp.router(
-          routerConfig: router,
-        ),
-      ),
+  testWidgets('slow save cannot navigate when the animation finishes', (
+    tester,
+  ) async {
+    final repo = FakeOnboardingRepository()..pending = Completer<void>();
+    await tester.pumpWidget(loadingTestApp(repo));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 17));
+    expect(find.text('Saving your preferences…'), findsOneWidget);
+    expect(find.text('Step into my day'), findsNothing);
+    repo.pending!.complete();
+    await tester.pump();
+    await tapVisible(tester, 'Step into my day');
+    expect(find.text('Today Screen'), findsOneWidget);
+  });
+
+  testWidgets('error is immediate and retry starts a fresh save and sequence', (
+    tester,
+  ) async {
+    final repo = FakeOnboardingRepository()..shouldFail = true;
+    await tester.pumpWidget(loadingTestApp(repo));
+    await tester.pump();
+    expect(find.text("Couldn't save your day"), findsOneWidget);
+    repo.shouldFail = false;
+    await tester.ensureVisible(find.text('Try again'));
+    await tester.tap(find.text('Try again'));
+    await tester.pump();
+    expect(find.text('KNOW YOUR TIME'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 17));
+    await tapVisible(tester, 'Step into my day');
+    expect(repo.saveCount, 2);
+    expect(find.text('Today Screen'), findsOneWidget);
+  });
+
+  testWidgets('error Back returns to category selection', (tester) async {
+    await tester.pumpWidget(
+      loadingTestApp(FakeOnboardingRepository()..shouldFail = true),
     );
-  }
+    await tester.pump();
+    await tapVisible(tester, 'Back');
+    expect(find.text('Categories Screen'), findsOneWidget);
+  });
 
-  group('SettingUpScreen Widget Tests', () {
-    testWidgets('shows calm sky animation, semantics label, and initial rhythm text',
-        (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+  testWidgets('reduced motion has a static scene and no artificial wait', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      loadingTestApp(FakeOnboardingRepository(), reduced: true),
+    );
+    await tester.pump();
+    final sky = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((w) => w.painter)
+        .whereType<SettingUpSkyPainter>()
+        .single;
+    expect(sky.reduceMotion, isTrue);
+    await tapVisible(tester, 'Step into my day');
+    expect(find.text('Today Screen'), findsOneWidget);
+  });
 
-      // Semantics label present
-      expect(find.bySemanticsLabel('Setting up your day. Please wait.'), findsOneWidget);
-
-      // RepaintBoundary wrapping the SkyPainter CustomPaint
-      expect(find.byType(RepaintBoundary), findsWidgets);
-      expect(find.byType(CustomPaint), findsWidgets);
-
-      // Initial text line
-      expect(find.text(SettingUpTexts.readingRhythm), findsOneWidget);
-
-      // Fast forward past the 4.5s delay + 300ms confirmation pause
-      await tester.pump(const Duration(milliseconds: 4600));
+  testWidgets('small screen and enlarged text keep copy above progress', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      loadingTestApp(FakeOnboardingRepository(), scale: 1.6),
+    );
+    await tester.pump();
+    for (var i = 0; i < 4; i++) {
+      if (i > 0) await tester.pump(const Duration(seconds: 4));
       await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull);
+      final progress = tester.getRect(find.byType(LinearProgressIndicator));
+      final title = tester.getRect(
+        find.text(
+          [
+            'A day that fits\nyour life.',
+            'Make room\nfor your priorities.',
+            'Be here.\nOne moment fully.',
+            'See your day.\nShape tomorrow.',
+          ][i],
+        ),
+      );
+      expect(progress.top, greaterThan(title.bottom + 32));
+    }
+    await tester.pump(const Duration(seconds: 4));
+    await tapVisible(tester, 'Step into my day');
+    expect(tester.takeException(), isNull);
+  });
 
-      // Tap continue button
-      await tester.tap(find.text(SettingUpTexts.continueButton));
-      await tester.pumpAndSettle();
-      expect(find.text('Today Screen'), findsOneWidget);
-    });
-
-    testWidgets('waits minimum ~4.5 seconds before navigating to /home on success',
-        (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pump();
-
-      // At 2 seconds: save is complete, but minimum time (4.5s) has NOT passed
-      await tester.pump(const Duration(seconds: 2));
-      expect(find.text('Today Screen'), findsNothing);
-
-      // Advance past 4.5s minimum display time + 300ms confirmation pause
-      await tester.pump(const Duration(milliseconds: 2700));
-      await tester.pump(const Duration(milliseconds: 500));
-
-      // Successfully routed after tapping continue
-      await tester.tap(find.text(SettingUpTexts.continueButton));
-      await tester.pumpAndSettle();
-      expect(find.text('Today Screen'), findsOneWidget);
-    });
-
-    testWidgets('failure shows screen 16 error state with Try again and Back buttons',
-        (tester) async {
-      fakeRepo.shouldFail = true;
-
-      await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pump();
-      await tester.pump();
-
-      // Error UI visible immediately
-      expect(find.text(SettingUpTexts.errorTitle), findsOneWidget);
-      expect(find.text(SettingUpTexts.tryAgainButton), findsOneWidget);
-      expect(find.text(SettingUpTexts.backButton), findsOneWidget);
-
-      // Did not navigate to /home
-      expect(find.text('Today Screen'), findsNothing);
-    });
-
-    testWidgets('Try again repeats the save operation', (tester) async {
-      fakeRepo.shouldFail = true;
-
-      await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pump();
-      await tester.pump();
-
-      expect(fakeRepo.saveCount, 1);
-      expect(find.text(SettingUpTexts.tryAgainButton), findsOneWidget);
-
-      // Now succeed on retry
-      fakeRepo.shouldFail = false;
-      await tester.tap(find.text(SettingUpTexts.tryAgainButton));
-      await tester.pump();
-      await tester.pump();
-
-      // Wait for second save cycle (4.5s + 300ms)
-      await tester.pump(const Duration(milliseconds: 4600));
-      await tester.pump(const Duration(milliseconds: 500));
-
-      expect(fakeRepo.saveCount, 2);
-      await tester.tap(find.text(SettingUpTexts.continueButton));
-      await tester.pumpAndSettle();
-      expect(find.text('Today Screen'), findsOneWidget);
-    });
-
-    testWidgets('Back button returns to categories keeping selections', (tester) async {
-      fakeRepo.shouldFail = true;
-
-      await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.text(SettingUpTexts.backButton), findsOneWidget);
-
-      // Tap Back
-      await tester.tap(find.text(SettingUpTexts.backButton));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-
-      expect(find.text('Categories Screen'), findsOneWidget);
-    });
-
-    testWidgets('reduce-motion mode renders static sun and simple progress indicator',
-        (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest(disableAnimations: true));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-
-      // CircularProgressIndicator present in reduce-motion mode
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      expect(find.text(SettingUpTexts.readingRhythm), findsOneWidget);
-
-      // Complete minimum display time + confirmation pause
-      await tester.pump(const Duration(milliseconds: 4600));
-      await tester.pump(const Duration(milliseconds: 500));
-      await tester.tap(find.text(SettingUpTexts.continueButton));
-      await tester.pumpAndSettle();
-      expect(find.text('Today Screen'), findsOneWidget);
-    });
+  testWidgets('disposing during a pending save leaves no callbacks or timers', (
+    tester,
+  ) async {
+    final repo = FakeOnboardingRepository()..pending = Completer<void>();
+    await tester.pumpWidget(loadingTestApp(repo));
+    await tester.pump();
+    await tester.pumpWidget(const SizedBox());
+    repo.pending!.complete();
+    await tester.pump(const Duration(seconds: 20));
+    expect(tester.takeException(), isNull);
   });
 }
