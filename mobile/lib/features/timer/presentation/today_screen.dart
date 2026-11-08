@@ -138,7 +138,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
                                   button: true,
                                   label: 'Edit plan',
                                   child: InkWell(
-                                    onTap: () => context.go('/plan'),
+                                    onTap: () => context.push('/plan/edit'),
                                     borderRadius: BorderRadius.circular(16),
                                     child: Container(
                                       width: 48,
@@ -463,9 +463,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
             button: true,
             label: 'History tab',
             child: InkWell(
-              onTap: () {
-                // Placeholder
-              },
+              onTap: () => context.go('/summary'),
               child: const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

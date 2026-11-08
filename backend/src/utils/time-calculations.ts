@@ -104,3 +104,24 @@ export function calculateActualSeconds(
     return total + duration;
   }, 0);
 }
+
+/**
+ * Calculates the minimum planned seconds allowed based on time already used today.
+ * Rounded up to the nearest 30-minute interval (1800s).
+ */
+export function calculateMinimumPlannedSeconds(usedSeconds: number): number {
+  if (usedSeconds <= 0) return 0;
+  return Math.ceil(usedSeconds / 1800) * 1800;
+}
+
+/**
+ * Formats seconds into a human-friendly duration string (e.g., "3h", "1h 30m", "45m").
+ */
+export function formatDurationFriendly(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  return `${m}m`;
+}
+

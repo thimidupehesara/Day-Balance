@@ -5,6 +5,8 @@ import {
   calculateTimerPauseRemaining,
   calculatePlannedSecondsChange,
   calculateActualSeconds,
+  calculateMinimumPlannedSeconds,
+  formatDurationFriendly,
 } from '../utils/time-calculations';
 
 describe('Timer & Plan Math Unit Tests', () => {
@@ -177,6 +179,47 @@ describe('Timer & Plan Math Unit Tests', () => {
 
       const actualSeconds = calculateActualSeconds(entries, now);
       assert.equal(actualSeconds, 1800 + 2700 + 900); // 5400s = 1.5h
+    });
+  });
+
+  describe('Rule: Minimum planned time based on used time (rounded up to 30 min)', () => {
+    it('returns 0 when no time has been used', () => {
+      assert.equal(calculateMinimumPlannedSeconds(0), 0);
+      assert.equal(calculateMinimumPlannedSeconds(-100), 0);
+    });
+
+    it('rounds up partial 30m intervals to the next 30m', () => {
+      assert.equal(calculateMinimumPlannedSeconds(1), 1800); // 1s -> 30m
+      assert.equal(calculateMinimumPlannedSeconds(900), 1800); // 15m -> 30m
+      assert.equal(calculateMinimumPlannedSeconds(1800), 1800); // 30m -> 30m
+      assert.equal(calculateMinimumPlannedSeconds(1801), 3600); // 30m 1s -> 1h
+      assert.equal(calculateMinimumPlannedSeconds(3600), 3600); // 1h -> 1h
+      assert.equal(calculateMinimumPlannedSeconds(7200), 7200); // 2h -> 2h
+      assert.equal(calculateMinimumPlannedSeconds(10800), 10800); // 3h -> 3h
+      assert.equal(calculateMinimumPlannedSeconds(10801), 12600); // 3h 1s -> 3h 30m
+    });
+
+    it('formats duration strings cleanly and friendly', () => {
+      assert.equal(formatDurationFriendly(10800), '3h');
+      assert.equal(formatDurationFriendly(5400), '1h 30m');
+      assert.equal(formatDurationFriendly(1800), '30m');
+      assert.equal(formatDurationFriendly(1200), '20m');
+      assert.equal(formatDurationFriendly(0), '0m');
+    });
+
+    it('never creates instant overtime when planned is at or above minimum planned seconds', () => {
+      const usedSeconds = 5400; // 1.5h used
+      const minPlanned = calculateMinimumPlannedSeconds(usedSeconds); // 5400 (1.5h)
+      const oldPlanned = 7200; // was 2h planned
+      const currentRemaining = oldPlanned - usedSeconds; // 1800s (30m left)
+
+      // User sets planned to exactly the minimum (1.5h)
+      const newRemaining = calculatePlannedSecondsChange(
+        currentRemaining,
+        oldPlanned,
+        minPlanned,
+      );
+      assert.equal(newRemaining, 0); // 0 remaining, NOT negative (no overtime)
     });
   });
 });

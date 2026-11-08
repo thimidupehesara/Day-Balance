@@ -543,6 +543,32 @@ async function runCoreFlowVerification(): Promise<void> {
     }
     console.log('✓ Rule 6 verified: remainingSeconds increased by 1800s while startedAt was preserved intact.');
 
+    // ── Minimum Planned Rule Verification ────────────────────────────────────
+    console.log('\nTesting Minimum Planned Rule: trying to plan category below time already used...');
+    // Category academic has already been used today (>0s)
+    const failMinPlannedRes = await fetch(`${BASE_URL}/api/plans/${planA.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tokenA}`,
+      },
+      body: JSON.stringify({
+        items: [
+          { categoryId: 'academic', plannedSeconds: 0 }, // academic has used time!
+          { categoryId: 'career', plannedSeconds: 9000 },
+          { categoryId: 'entertainment', plannedSeconds: 3600 },
+        ],
+      }),
+    });
+
+    if (failMinPlannedRes.status !== 400) {
+      throw new Error(
+        `Expected 400 when setting planned time below used time, got ${failMinPlannedRes.status}`,
+      );
+    }
+    const failMinJson = (await failMinPlannedRes.json()) as { error?: string };
+    console.log(`✓ Minimum planned time rule enforced (400): "${failMinJson.error}"`);
+
     // ── 12. Summary Endpoint (Rule 8) ────────────────────────────────────────
     console.log('\n[12/13] Testing Rule 8: Planned vs Actual Summary Endpoint...');
     const summaryRes = await fetch(`${BASE_URL}/api/plans/summary?date=${todayStr}`, {
@@ -664,6 +690,24 @@ async function runCoreFlowVerification(): Promise<void> {
       throw new Error(`Expected 404 for cross-user start timer, got ${crossStartTimer.status}`);
     }
     console.log('✓ User B cannot start User A\'s plan item (404 Not Found).');
+
+    // User B gets summary for today -> gets only User B's empty summary (no User A data)
+    const crossSummaryRes = await fetch(`${BASE_URL}/api/plans/summary?date=${todayStr}`, {
+      headers: { Authorization: `Bearer ${tokenB}` },
+    });
+    if (!crossSummaryRes.ok) {
+      throw new Error(`Expected 200 for User B summary, got ${crossSummaryRes.status}`);
+    }
+    const crossSummaryData = (await crossSummaryRes.json()) as SummaryApiResponse;
+    if (
+      crossSummaryData.data.summary.categories.length > 0 ||
+      crossSummaryData.data.summary.totalPlannedSeconds > 0
+    ) {
+      throw new Error(
+        'User B received User A\'s summary data! Data isolation failure.',
+      );
+    }
+    console.log('✓ User B cannot see User A\'s summary data (User B received empty summary).');
 
     // Unauthenticated request without token -> 401
     const unauthRes = await fetch(`${BASE_URL}/api/plans/today`);
