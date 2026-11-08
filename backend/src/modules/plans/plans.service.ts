@@ -2,6 +2,7 @@ import { eq, and, asc, notInArray, inArray } from 'drizzle-orm';
 import { db } from '../../db/connection';
 import { dailyPlans, planItems, categories, users, timeEntries } from '../../db/schema';
 import { CreatePlanInput, UpdatePlanInput } from './plans.validation';
+import { CategoriesService } from '../categories/categories.service';
 import {
   calculateWakingSeconds,
   calculatePlannedSecondsChange,
@@ -84,6 +85,7 @@ export class PlansService {
     data: CreatePlanInput,
   ): Promise<PlanDetails> {
     // 1. Compute waking_seconds server-side from user profile
+    await CategoriesService.validateCategoryAccess(userId, data.items.map(item => item.categoryId));
     const [user] = await db
       .select({
         wakeTime: users.wakeTime,
@@ -256,6 +258,7 @@ export class PlansService {
     const wakingSeconds = existingPlan.wakingSeconds;
 
     if (data.items) {
+      await CategoriesService.validateCategoryAccess(userId, data.items.map(item => item.categoryId));
       const totalPlanned = data.items.reduce(
         (sum, item) => sum + item.plannedSeconds,
         0,

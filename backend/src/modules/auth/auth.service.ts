@@ -1,9 +1,10 @@
 import crypto from 'crypto';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
-import { eq, and, isNull, gt } from 'drizzle-orm';
+import { eq, and, isNull, gt, like } from 'drizzle-orm';
 import { db } from '../../db/connection';
-import { users, refreshTokens } from '../../db/schema';
+import { users, refreshTokens, categories } from '../../db/schema';
+import { customCategoryPrefix } from '../categories/category-access';
 import { env } from '../../config/env';
 
 interface TokenPair {
@@ -196,6 +197,9 @@ export class AuthService {
   }
 
   static async deleteAccount(userId: string): Promise<void> {
-    await db.delete(users).where(eq(users.id, userId));
+    await db.transaction(async tx => {
+      await tx.delete(users).where(eq(users.id, userId));
+      await tx.delete(categories).where(like(categories.id, `${customCategoryPrefix(userId)}%`));
+    });
   }
 }
