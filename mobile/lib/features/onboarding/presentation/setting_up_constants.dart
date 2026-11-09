@@ -2,6 +2,32 @@
 /// Kept in a single editable file matching the design tone: warm, calm, quietly purposeful.
 class SettingUpTexts {
   SettingUpTexts._();
+  static const chapters = [
+    (
+      eyebrow: 'KNOW YOUR TIME',
+      title: 'A day that fits\nyour life.',
+      body: 'See the hours left after sleep and routines, so you can plan a day that feels doable.',
+      status: 'Finding your daily rhythm',
+    ),
+    (
+      eyebrow: 'CHOOSE WHAT MATTERS',
+      title: 'Make room\nfor your priorities.',
+      body: 'Give study, work and family their time, with space for rest and the unexpected.',
+      status: 'Making room for your priorities',
+    ),
+    (
+      eyebrow: 'ONE THING AT A TIME',
+      title: 'Be here.\nOne moment fully.',
+      body: 'Start a timer for what you’re doing. Switch activities, and the previous timer pauses.',
+      status: 'Preparing your focus timers',
+    ),
+    (
+      eyebrow: 'LEARN YOUR RHYTHM',
+      title: 'See your day.\nShape tomorrow.',
+      body: 'Compare planned and actual time to see where your hours went and plan with more clarity.',
+      status: 'Finishing your daily setup',
+    ),
+  ];
 
   // Initial reading line
   static const String readingRhythm = 'Reading your rhythm...';
@@ -43,7 +69,9 @@ class SettingUpTexts {
     required int? similarCount,
   }) {
     final wakingHours = (grossWakingMinutes / 60).round();
-    final personalLine = personalWakingHours(wakingHours > 0 ? wakingHours : 16);
+    final personalLine = personalWakingHours(
+      wakingHours > 0 ? wakingHours : 16,
+    );
 
     final String socialLine;
     if (showable && similarCount != null && similarCount >= 25) {

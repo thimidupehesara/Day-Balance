@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
@@ -73,63 +74,52 @@ class AppTextField extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
             hintText: hintText,
-            hintStyle: AppTextStyles.body16.copyWith(
-              color: AppColors.outline,
-            ),
+            hintStyle: AppTextStyles.body16.copyWith(color: AppColors.outline),
             suffixIcon: suffixIcon,
-            filled: false,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            filled: true,
+            fillColor: AppColors.surface,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(13),
               borderSide: BorderSide(
                 color: hasError ? AppColors.error : AppColors.outline,
                 width: 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(13),
               borderSide: BorderSide(
                 color: hasError ? AppColors.error : AppColors.outline,
                 width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(13),
               borderSide: BorderSide(
                 color: hasError ? AppColors.error : AppColors.primarySage,
                 width: 1.5,
               ),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(
-                color: AppColors.error,
-                width: 1,
-              ),
+              borderRadius: BorderRadius.circular(13),
+              borderSide: const BorderSide(color: AppColors.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(
-                color: AppColors.error,
-                width: 1.5,
-              ),
+              borderRadius: BorderRadius.circular(13),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
             ),
             disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(
-                color: AppColors.divider,
-                width: 1,
-              ),
+              borderRadius: BorderRadius.circular(13),
+              borderSide: const BorderSide(color: AppColors.divider, width: 1),
             ),
           ),
         ),
         if (hasError) ...[
           const SizedBox(height: 4),
-          Text(
-            errorText!,
-            style: AppTextStyles.error,
-          ),
+          Text(errorText!, style: AppTextStyles.error),
         ],
       ],
     );

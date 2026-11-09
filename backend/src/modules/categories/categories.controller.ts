@@ -1,9 +1,34 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { CategoriesService } from './categories.service';
-import { updateUserCategoriesSchema } from './categories.validation';
+import { updateUserCategoriesSchema, createCategorySchema } from './categories.validation';
 
 export class CategoriesController {
+  static async getAvailable(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+      res.json({ data: { categories: await CategoriesService.getAvailableCategories(req.userId) } });
+    } catch (err) { next(err); }
+  }
+
+  static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+      const input = createCategorySchema.parse(req.body);
+      const category = await CategoriesService.createCustomCategory(req.userId, input);
+      res.status(201).json({ data: { category } });
+    } catch (err) {
+      if (err instanceof ZodError) {
+        res.status(400).json({ error: 'Validation failed', details: err.flatten().fieldErrors });
+        return;
+      }
+      if (err instanceof Error && 'statusCode' in err && typeof err.statusCode === 'number') {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      next(err);
+    }
+  }
   static async getAll(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const allCategories = await CategoriesService.getAllCategories();

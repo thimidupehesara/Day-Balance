@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
@@ -8,6 +9,7 @@ class AppSecondaryButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isEnabled;
+  final Color? foregroundColor;
 
   const AppSecondaryButton({
     super.key,
@@ -15,6 +17,7 @@ class AppSecondaryButton extends StatelessWidget {
     String? label,
     required this.onPressed,
     this.isEnabled = true,
+    this.foregroundColor,
   }) : text = label ?? text ?? '';
 
   @override
@@ -26,7 +29,7 @@ class AppSecondaryButton extends StatelessWidget {
         onPressed: isEnabled ? onPressed : null,
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.transparent,
-          foregroundColor: AppColors.primarySage,
+          foregroundColor: foregroundColor ?? AppColors.primarySage,
           disabledForegroundColor: AppColors.disabled,
           side: const BorderSide(color: AppColors.outline, width: 1),
           shape: RoundedRectangleBorder(
@@ -37,7 +40,7 @@ class AppSecondaryButton extends StatelessWidget {
         child: Text(
           text,
           style: AppTextStyles.buttonOutlined.copyWith(
-            color: AppColors.primarySage,
+            color: foregroundColor ?? AppColors.primarySage,
           ),
         ),
       ),

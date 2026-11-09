@@ -1,6 +1,8 @@
 import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/constants/categories.dart';
 import '../../onboarding/data/onboarding_repository.dart';
 import '../data/plans_repository.dart';
@@ -9,6 +11,7 @@ class PlanState {
   final int wakingSeconds;
   final Map<String, int> plannedSeconds; // categoryId -> plannedSeconds
   final List<String> selectedCategoryIds;
+  final List<Category> availableCategories;
   final String? existingPlanId;
   final bool isLoading;
   final String? errorMessage;
@@ -17,6 +20,7 @@ class PlanState {
     this.wakingSeconds = 16 * 3600, // default 16 hours
     this.plannedSeconds = const {},
     this.selectedCategoryIds = const [],
+    this.availableCategories = kCategories,
     this.existingPlanId,
     this.isLoading = false,
     this.errorMessage,
@@ -45,7 +49,8 @@ class PlanState {
 
   bool get hasEntertainmentWarning => entertainmentRatio > 0.30;
 
-  bool get canStartDay => !isOverAllocated && totalPlannedSeconds > 0 && !isLoading;
+  bool get canStartDay =>
+      !isOverAllocated && totalPlannedSeconds > 0 && !isLoading;
 
   /// Standard duration format matching Figma: e.g. "0h 30m", "14h 30m", "4h 00m"
   static String formatDuration(int totalSec) {
@@ -67,6 +72,7 @@ class PlanState {
     int? wakingSeconds,
     Map<String, int>? plannedSeconds,
     List<String>? selectedCategoryIds,
+    List<Category>? availableCategories,
     String? existingPlanId,
     bool? isLoading,
     String? errorMessage,
@@ -76,6 +82,7 @@ class PlanState {
       wakingSeconds: wakingSeconds ?? this.wakingSeconds,
       plannedSeconds: plannedSeconds ?? this.plannedSeconds,
       selectedCategoryIds: selectedCategoryIds ?? this.selectedCategoryIds,
+      availableCategories: availableCategories ?? this.availableCategories,
       existingPlanId: existingPlanId ?? this.existingPlanId,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
@@ -130,12 +137,19 @@ class PlanController extends Notifier<PlanState> {
         for (final item in existingPlan.items) {
           map[item.categoryId] = item.plannedSeconds;
         }
+        // Keep existing allocations visible even if category preferences changed.
+        userCategories = {...userCategories, ...map.keys}.toList();
       }
+
+      final available = userCategories.any((id) => id.startsWith('custom:'))
+          ? await onboardingRepo.getAvailableCategories()
+          : kCategories;
 
       state = state.copyWith(
         wakingSeconds: wakingSec,
         plannedSeconds: map,
         selectedCategoryIds: userCategories,
+        availableCategories: available,
         existingPlanId: planId,
         isLoading: false,
       );
@@ -164,9 +178,7 @@ class PlanController extends Notifier<PlanState> {
 
   Future<bool> savePlan() async {
     if (state.isOverAllocated) {
-      state = state.copyWith(
-        errorMessage: 'Free up time to continue',
-      );
+      state = state.copyWith(errorMessage: 'Free up time to continue');
       return false;
     }
 
@@ -177,16 +189,16 @@ class PlanController extends Notifier<PlanState> {
 
       final itemsPayload = state.plannedSeconds.entries
           .where((entry) => entry.value > 0)
-          .map((entry) => {
-                'categoryId': entry.key,
-                'plannedSeconds': entry.value,
-              })
+          .map(
+            (entry) => {'categoryId': entry.key, 'plannedSeconds': entry.value},
+          )
           .toList();
 
       if (itemsPayload.isEmpty) {
         state = state.copyWith(
           isLoading: false,
-          errorMessage: 'Assign time to at least one category to start your day',
+          errorMessage:
+              'Assign time to at least one category to start your day',
         );
         return false;
       }
@@ -215,5 +227,6 @@ class PlanController extends Notifier<PlanState> {
   }
 }
 
-final planControllerProvider =
-    NotifierProvider<PlanController, PlanState>(PlanController.new);
+final planControllerProvider = NotifierProvider<PlanController, PlanState>(
+  PlanController.new,
+);

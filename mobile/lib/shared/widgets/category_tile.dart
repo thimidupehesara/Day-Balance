@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/categories.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_icons.dart';
 import '../../core/theme/app_text_styles.dart';
 
-/// Tinted selectable category tile matching Figma 07_choose_categories.
-/// Selected: category color at FULL opacity with checked sage checkbox.
-/// Unselected: surface background with border and empty checkbox.
+/// Selectable evening card with a category-colored icon and sage checkbox.
 class CategoryTile extends StatelessWidget {
   final Category category;
   final bool isSelected;
@@ -29,10 +28,18 @@ class CategoryTile extends StatelessWidget {
         curve: Curves.easeInOut,
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: isSelected ? category.color : AppColors.surface,
+          color: isSelected
+              ? Color.alphaBlend(
+                  category.color.withValues(alpha: .09),
+                  AppColors.surface,
+                )
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: isSelected
-              ? Border.all(color: Colors.transparent, width: 1)
+              ? Border.all(
+                  color: AppColors.outline.withValues(alpha: .35),
+                  width: 1,
+                )
               : Border.all(color: AppColors.divider, width: 1),
         ),
         child: Material(
@@ -46,15 +53,15 @@ class CategoryTile extends StatelessWidget {
                 children: [
                   // Category Icon (22x22)
                   Container(
-                    width: 24,
-                    height: 24,
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: category.color.withValues(alpha: .12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     margin: const EdgeInsets.only(right: 12),
                     alignment: Alignment.center,
-                    child: Icon(
-                      category.icon,
-                      size: 22,
-                      color: AppColors.text,
-                    ),
+                    child: Icon(category.icon, size: 20, color: category.color),
                   ),
 
                   // Title + description
@@ -74,7 +81,7 @@ class CategoryTile extends StatelessWidget {
                         Text(
                           category.description,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: isSelected ? AppColors.text : AppColors.secondary,
+                            color: AppColors.secondary,
                             fontSize: 12,
                           ),
                         ),
@@ -90,10 +97,14 @@ class CategoryTile extends StatelessWidget {
                     width: 18,
                     height: 18,
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primarySage : Colors.transparent,
+                      color: isSelected
+                          ? AppColors.primarySage
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(3),
                       border: Border.all(
-                        color: isSelected ? AppColors.primarySage : AppColors.outline,
+                        color: isSelected
+                            ? AppColors.primarySage
+                            : AppColors.outline,
                         width: 1.5,
                       ),
                     ),
@@ -102,7 +113,7 @@ class CategoryTile extends StatelessWidget {
                         ? const Icon(
                             AppIcons.check,
                             size: 13,
-                            color: Colors.white,
+                            color: AppColors.textOnPrimary,
                           )
                         : null,
                   ),

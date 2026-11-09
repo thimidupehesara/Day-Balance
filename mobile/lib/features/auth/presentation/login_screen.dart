@@ -1,6 +1,9 @@
+import '../../../shared/widgets/app_page.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/app_text_field.dart';
@@ -37,7 +40,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _clearErrors() {
-    if (_emailError != null || _passwordError != null || _generalError != null) {
+    if (_emailError != null ||
+        _passwordError != null ||
+        _generalError != null) {
       setState(() {
         _emailError = null;
         _passwordError = null;
@@ -88,10 +93,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    final success = await ref.read(authControllerProvider.notifier).login(
-          email: email,
-          password: password,
-        );
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .login(email: email, password: password);
 
     if (!mounted) return;
 
@@ -109,8 +113,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             errorMessage.toLowerCase().contains('password') ||
             errorMessage.toLowerCase().contains('email')) {
           // Exact text shown in Figma 03_login.png
-          _passwordError =
-              'That password doesn’t match this email. Try again or reset it below.';
+          _passwordError = 'That password doesn’t match this email. Try again or reset it below.';
         } else {
           _generalError = errorMessage;
         }
@@ -125,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           'Password reset will be available soon. Please contact support if you need help.',
           style: AppTextStyles.body14.copyWith(color: AppColors.white),
         ),
-        backgroundColor: AppColors.text,
+        backgroundColor: AppColors.surface,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -136,7 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.isLoading;
 
-    return Scaffold(
+    return AppPage(
       backgroundColor: AppColors.canvas,
       body: SafeArea(
         child: LayoutBuilder(
@@ -144,9 +147,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,11 +185,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // Title: "Good to see you." (Heading 32/38 Roboto Medium #292E28)
-                      Text(
-                        'Good to see you.',
-                        style: AppTextStyles.heading,
+                      const Text(
+                        'YOUR TIME, WELL SPENT',
+                        style: AppTextStyles.eyebrow,
                       ),
+                      const SizedBox(height: 14),
+                      Text('Good to see you.', style: AppTextStyles.heading),
                       const SizedBox(height: 8),
 
                       // Subtitle: "Log in and pick up\nwhere you left off." (Body 16/22 Roboto Regular #62675D)

@@ -1,8 +1,12 @@
+import '../../../shared/widgets/app_page.dart';
+
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -48,136 +52,138 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
     final state = ref.watch(todayControllerProvider);
     final controller = ref.read(todayControllerProvider.notifier);
 
-    return Scaffold(
+    return AppPage(
       backgroundColor: AppColors.backgroundCream,
       body: SafeArea(
         child: state.isLoading && state.items.isEmpty
             ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primarySage,
-                ),
+                child: CircularProgressIndicator(color: AppColors.primarySage),
               )
             : state.isOffline && state.items.isEmpty
-                ? _buildOfflineScreen(controller)
-                : RefreshIndicator(
-                    color: AppColors.primarySage,
-                    backgroundColor: AppColors.surface,
-                    onRefresh: () async {
-                      await controller.fetchStatus();
-                    },
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+            ? _buildOfflineScreen(controller)
+            : RefreshIndicator(
+                color: AppColors.primarySage,
+                backgroundColor: AppColors.surface,
+                onRefresh: () async {
+                  await controller.fetchStatus();
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 12),
+
+                      // Date Header: "WEDNESDAY, 14 OCTOBER"
+                      Text(
+                        DateFormat('EEEE, d MMMM')
+                            .format(DateTime.now())
+                            .toUpperCase(),
+                        style: const TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
+                          color: AppColors.secondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Greeting: "Good morning, Maya." / "Hello, Maya." / "Hello!"
+                      Text(
+                        state.greeting,
+                        style: const TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
+                          color: AppColors.text,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Top Summary Section: "Total hours left" + Edit plan button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
                         children: [
-                          const SizedBox(height: 12),
-
-                          // Date Header: "WEDNESDAY, 14 OCTOBER"
-                          Text(
-                            DateFormat('EEEE, d MMMM')
-                                .format(DateTime.now())
-                                .toUpperCase(),
-                            style: const TextStyle(
-                              fontFamily: AppTextStyles.fontFamily,
-                              color: AppColors.secondary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-
-                          // Greeting: "Good morning, Maya." / "Hello, Maya." / "Hello!"
-                          Text(
-                            state.greeting,
-                            style: const TextStyle(
-                              fontFamily: AppTextStyles.fontFamily,
-                              color: AppColors.text,
-                              fontSize: 24,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Top Summary Section: "Total hours left" + Edit plan button
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Total hours left',
-                                    style: TextStyle(
-                                      fontFamily: AppTextStyles.fontFamily,
-                                      color: AppColors.secondary,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    TodayTimerState.formatDuration(
-                                        state.totalHoursLeftSeconds),
-                                    style: const TextStyle(
-                                      fontFamily: AppTextStyles.fontFamily,
-                                      color: AppColors.primarySage,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: -0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              // Edit Plan Button (only when plan exists)
-                              if (state.hasPlanForToday)
-                                Semantics(
-                                  button: true,
-                                  label: 'Edit plan',
-                                  child: InkWell(
-                                    onTap: () => context.push('/plan/edit'),
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      width: 48,
-                                      height: 48,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.surface,
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: const Icon(
-                                        AppIcons.edit,
-                                        size: 20,
-                                        color: AppColors.secondary,
-                                      ),
-                                    ),
-                                  ),
+                              const Text(
+                                'Total hours left',
+                                style: TextStyle(
+                                  fontFamily: AppTextStyles.fontFamily,
+                                  color: AppColors.secondary,
+                                  fontSize: 12,
                                 ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                TodayTimerState.formatDuration(
+                                  state.totalHoursLeftSeconds,
+                                ),
+                                style: const TextStyle(
+                                  fontFamily: AppTextStyles.fontFamily,
+                                  color: AppColors.primarySage,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 20),
 
-                          // Body: Before-Planning state OR Active Plan Category Cards
-                          if (!state.hasPlanForToday)
-                            _buildBeforePlanningState(context, state)
-                          else
-                            _buildPlannedCategoriesList(context, state, controller),
-
-                          const SizedBox(height: 24),
+                          // Edit Plan Button (only when plan exists)
+                          if (state.hasPlanForToday)
+                            Semantics(
+                              button: true,
+                              label: 'Edit plan',
+                              child: InkWell(
+                                onTap: () => context.push('/plan/edit'),
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  width: 48,
+                                  height: 48,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: const Icon(
+                                    AppIcons.edit,
+                                    size: 20,
+                                    color: AppColors.secondary,
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 20),
+
+                      // Body: Before-Planning state OR Active Plan Category Cards
+                      if (!state.hasPlanForToday)
+                        _buildBeforePlanningState(context, state)
+                      else
+                        _buildPlannedCategoriesList(context, state, controller),
+
+                      const SizedBox(height: 24),
+                    ],
                   ),
+                ),
+              ),
       ),
       bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
   /// Before-Planning empty state matching Figma 09_today_home_before_planning
-  Widget _buildBeforePlanningState(BuildContext context, TodayTimerState state) {
+  Widget _buildBeforePlanningState(
+    BuildContext context,
+    TodayTimerState state,
+  ) {
     final wakeTime = state.user?.wakeTime ?? '7:00';
     final bedtime = state.user?.bedtime ?? '23:00';
 
@@ -190,7 +196,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
           margin: const EdgeInsets.only(bottom: 24),
           padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
           decoration: BoxDecoration(
-            color: const Color(0xFFEEE8DC),
+            color: AppColors.paper,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -289,14 +295,17 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
             ? TodayTimerState.formatCountdown(remainingSec)
             : TodayTimerState.formatDuration(remainingSec);
         final overtimeStr = TodayTimerState.formatOvertime(overtimeSec);
-        final usedStr = TodayTimerState.formatUsed(item.plannedSeconds, overtimeSec);
+        final usedStr = TodayTimerState.formatUsed(
+          item.plannedSeconds,
+          overtimeSec,
+        );
 
         final progress = isOvertime
             ? 1.0
             : (item.plannedSeconds > 0
-                ? ((item.plannedSeconds - remainingSec) / item.plannedSeconds)
-                    .clamp(0.0, 1.0)
-                : 0.0);
+                  ? ((item.plannedSeconds - remainingSec) / item.plannedSeconds)
+                        .clamp(0.0, 1.0)
+                  : 0.0);
 
         final color = AppColors.colorForCategory(item.categoryId);
 
@@ -319,13 +328,16 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
             } else {
               // If another category is currently running, show SwitchSheet
               if (state.activeItemId != null && state.activeItemId != item.id) {
-                final activeItem = state.items.cast<PlanItemModel?>().firstWhere(
+                final activeItem = state.items
+                    .cast<PlanItemModel?>()
+                    .firstWhere(
                       (i) => i?.id == state.activeItemId,
                       orElse: () => null,
                     );
                 if (activeItem != null) {
-                  final activeRemainingSec =
-                      state.getRemainingSecondsForItem(activeItem);
+                  final activeRemainingSec = state.getRemainingSecondsForItem(
+                    activeItem,
+                  );
                   final activeRemainingStr = TodayTimerState.formatShort(
                     math.max(0, activeRemainingSec),
                   );
@@ -340,8 +352,9 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
                     targetCategoryName: item.categoryName,
                     targetRemainingText: targetRemainingStr,
                     targetCategoryColor: color,
-                    targetCategoryIcon:
-                        AppIcons.iconForCategory(item.categoryId),
+                    targetCategoryIcon: AppIcons.iconForCategory(
+                      item.categoryId,
+                    ),
                     onConfirm: () {
                       controller.startTimer(item.id);
                     },
@@ -413,10 +426,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
   Widget _buildBottomNav(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFFEEE8DC),
-        border: Border(
-          top: BorderSide(color: AppColors.divider, width: 0.5),
-        ),
+        color: AppColors.paper,
+        border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
       ),
       padding: const EdgeInsets.only(top: 8, bottom: 16),
       child: Row(

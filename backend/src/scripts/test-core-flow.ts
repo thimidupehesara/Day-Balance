@@ -502,6 +502,10 @@ async function runCoreFlowVerification(): Promise<void> {
 
     const oldRemainingB = runningBefore.remainingSeconds;
     const oldStartedAtB = runningBefore.startedAt.toISOString();
+    // The overtime fixture above used more than Academic's original budget.
+    // Keep that paused item's allocation valid while testing the running Career edit.
+    const academicUsed = itemA.plannedSeconds - pauseOvertimeData.data.pausedItem.remainingSeconds;
+    const academicMinimum = Math.ceil(academicUsed / 1800) * 1800;
 
     // Now call PATCH /api/plans/:id, increasing item B planned from 7200 to 9000 (+1800s)
     const patchPlanRes = await fetch(`${BASE_URL}/api/plans/${planA.id}`, {
@@ -512,7 +516,7 @@ async function runCoreFlowVerification(): Promise<void> {
       },
       body: JSON.stringify({
         items: [
-          { categoryId: 'academic', plannedSeconds: 7200 },
+          { categoryId: 'academic', plannedSeconds: academicMinimum },
           { categoryId: 'career', plannedSeconds: 9000 }, // +1800s
           { categoryId: 'entertainment', plannedSeconds: 3600 },
         ],

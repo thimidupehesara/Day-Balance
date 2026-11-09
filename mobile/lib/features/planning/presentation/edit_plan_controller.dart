@@ -1,6 +1,8 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/constants/categories.dart';
 import '../../timer/presentation/today_controller.dart';
 import '../data/plans_repository.dart';
@@ -40,9 +42,7 @@ class EditPlanCategoryItem {
     return "You've already used $usedStr here, so $minStr is the minimum.";
   }
 
-  EditPlanCategoryItem copyWith({
-    int? currentPlannedSeconds,
-  }) {
+  EditPlanCategoryItem copyWith({int? currentPlannedSeconds}) {
     return EditPlanCategoryItem(
       categoryId: categoryId,
       categoryName: categoryName,
@@ -146,6 +146,9 @@ class EditPlanController extends Notifier<EditPlanState> {
         final found = kCategories.where((c) => c.id == item.categoryId);
         if (found.isNotEmpty) {
           catColor = found.first.color;
+        } else {
+          final hex = item.categoryColor.replaceFirst('#', '');
+          catColor = Color(int.tryParse('FF$hex', radix: 16) ?? 0xFFA9CEC6);
         }
 
         categoryItems.add(
@@ -228,10 +231,12 @@ class EditPlanController extends Notifier<EditPlanState> {
 
       final itemsPayload = state.items
           .where((i) => i.currentPlannedSeconds > 0)
-          .map((i) => {
-                'categoryId': i.categoryId,
-                'plannedSeconds': i.currentPlannedSeconds,
-              })
+          .map(
+            (i) => {
+              'categoryId': i.categoryId,
+              'plannedSeconds': i.currentPlannedSeconds,
+            },
+          )
           .toList();
 
       await plansRepo.updatePlan(
@@ -254,6 +259,4 @@ class EditPlanController extends Notifier<EditPlanState> {
 }
 
 final editPlanControllerProvider =
-    NotifierProvider<EditPlanController, EditPlanState>(
-  EditPlanController.new,
-);
+    NotifierProvider<EditPlanController, EditPlanState>(EditPlanController.new);

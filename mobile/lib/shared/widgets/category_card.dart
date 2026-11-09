@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/theme/app_colors.dart';
 import 'app_progress_bar.dart';
 
@@ -43,12 +44,18 @@ class CategoryTimerCard extends StatelessWidget {
   /// Running / Overtime expanded active card
   Widget _buildRunningOrOvertimeCard(BuildContext context) {
     final borderColor = isOvertime ? AppColors.error : AppColors.primarySage;
-    final backgroundColor =
-        isOvertime ? AppColors.errorContainer : categoryColor;
+    final backgroundColor = isOvertime
+        ? AppColors.errorContainer
+        : Color.alphaBlend(
+            categoryColor.withValues(alpha: .12),
+            AppColors.surface,
+          );
     final statusColor = isOvertime ? AppColors.error : AppColors.primarySage;
     final statusText = isOvertime ? 'OVERTIME' : '● RUNNING';
     final timerTextColor = isOvertime ? AppColors.error : AppColors.text;
-    final timerDisplay = isOvertime ? (overtimeText ?? remainingText) : remainingText;
+    final timerDisplay = isOvertime
+        ? (overtimeText ?? remainingText)
+        : remainingText;
     final subText = isOvertime && usedText != null
         ? 'Planned $plannedText · $usedText used'
         : 'Planned $plannedText · remaining';
@@ -136,7 +143,7 @@ class CategoryTimerCard extends StatelessWidget {
                     child: const Text(
                       'Pause',
                       style: TextStyle(
-                        color: AppColors.white,
+                        color: AppColors.textOnPrimary,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
@@ -232,10 +239,7 @@ class CategoryTimerCard extends StatelessWidget {
               ),
               const Text(
                 'remaining',
-                style: TextStyle(
-                  color: AppColors.secondary,
-                  fontSize: 10,
-                ),
+                style: TextStyle(color: AppColors.secondary, fontSize: 10),
               ),
             ],
           ),

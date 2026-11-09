@@ -41,7 +41,7 @@
 | [Onboarding Routine](screens/onboarding_routine.md) | DONE | Morning & wind-up routine steppers matching Figma `_05_onboarding_routine.dart` | Verified with widget tests, routine math, and live API |
 | [Onboarding Result](screens/onboarding_result.md) | DONE | Daily net hours calculation & breakdown matching Figma `_06_onboarding_result.dart` | Verified with widget tests and router transitions |
 | [Onboarding Categories](screens/onboarding_categories.md) | DONE | Select categories from the 7 matching Figma `_07_choose_categories.dart` | Verified with widget tests and live API |
-| [Setting Up Screen](screens/setup_loading.md) | DONE | "Setting up your day" loading screen with custom sky animation, honest social proof, and error retry | Built from spec; verified live and with widget tests |
+| Setting Up Screen | DONE | Approved cinematic sunrise/moonset, fading benefit copy, responsive layout, reduced motion and save-gated Continue | Built from approved preview (no Figma export); rendered locally and tested with fake repositories, including retry and slow saves |
 | [Plan Screen](screens/plan.md) | DONE | Daily planning with 30m steppers, zero hours left, and over-allocated states matching Figma 08 | Verified with widget tests and live API |
 | [Today Screen](screens/today.md) | DONE | Main screen with before-planning, active timers, overtime, and screen 16 offline state matching Figma 09 | Verified with widget tests and live API |
 | [Active Timer](screens/active_timer.md) | DONE | Fullscreen focus timer with circular progress dial, overtime support, and category switcher matching Figma 10 | Verified with widget tests and live router integration |

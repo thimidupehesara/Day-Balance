@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
@@ -116,15 +117,14 @@ class SwitchSheet extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              color: targetCategoryColor,
+              color: Color.alphaBlend(
+                targetCategoryColor.withValues(alpha: .12),
+                AppColors.surface,
+              ),
             ),
             child: Row(
               children: [
-                Icon(
-                  targetCategoryIcon,
-                  size: 24,
-                  color: AppColors.text,
-                ),
+                Icon(targetCategoryIcon, size: 24, color: AppColors.text),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -158,10 +158,7 @@ class SwitchSheet extends StatelessWidget {
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
-                        border: Border.all(
-                          color: AppColors.outline,
-                          width: 1,
-                        ),
+                        border: Border.all(color: AppColors.outline, width: 1),
                         borderRadius: BorderRadius.circular(100),
                       ),
                       alignment: Alignment.center,
@@ -202,7 +199,7 @@ class SwitchSheet extends StatelessWidget {
                         'Confirm',
                         style: TextStyle(
                           fontFamily: AppTextStyles.fontFamily,
-                          color: AppColors.white,
+                          color: AppColors.textOnPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),

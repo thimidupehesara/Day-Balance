@@ -1,12 +1,44 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/network/dio_provider.dart';
 import '../../auth/domain/user_model.dart';
+import '../../../core/constants/categories.dart';
 
 class OnboardingRepository {
   final Dio _dio;
 
   OnboardingRepository(this._dio);
+
+  Future<List<Category>> getAvailableCategories() async {
+    final response = await _dio.get('/api/categories/available');
+    return (response.data['data']['categories'] as List)
+        .map(
+          (json) => Category.fromJson(Map<String, dynamic>.from(json as Map)),
+        )
+        .toList();
+  }
+
+  Future<Category> createCustomCategory({
+    required String name,
+    required String description,
+    required String color,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/categories/custom',
+        data: {'name': name, 'description': description, 'color': color},
+      );
+      return Category.fromJson(
+        Map<String, dynamic>.from(response.data['data']['category'] as Map),
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data?['error'] ??
+            'Could not save this category. Please try again.',
+      );
+    }
+  }
 
   Future<UserModel> updateProfile({
     String? wakeTime,
@@ -23,13 +55,9 @@ class OnboardingRepository {
       if (onboardingDone != null) data['onboardingDone'] = onboardingDone;
       if (displayName != null) data['displayName'] = displayName;
 
-      final response = await _dio.patch(
-        '/api/users/me',
-        data: data,
-      );
+      final response = await _dio.patch('/api/users/me', data: data);
 
-      final userJson =
-          response.data['data']['user'] as Map<String, dynamic>;
+      final userJson = response.data['data']['user'] as Map<String, dynamic>;
       return UserModel.fromJson(userJson);
     } on DioException catch (e) {
       final msg =
@@ -41,8 +69,7 @@ class OnboardingRepository {
   Future<UserModel> getProfile() async {
     try {
       final response = await _dio.get('/api/users/me');
-      final userJson =
-          response.data['data']['user'] as Map<String, dynamic>;
+      final userJson = response.data['data']['user'] as Map<String, dynamic>;
       return UserModel.fromJson(userJson);
     } on DioException catch (e) {
       final msg =
@@ -57,11 +84,11 @@ class OnboardingRepository {
         '/api/categories/mine',
         data: {'categoryIds': categoryIds},
       );
-      final rawList =
-          response.data['data']['categories'] as List<dynamic>;
+      final rawList = response.data['data']['categories'] as List<dynamic>;
       return rawList.map((item) => item['id'] as String).toList();
     } on DioException catch (e) {
-      final msg = e.response?.data?['error'] ??
+      final msg =
+          e.response?.data?['error'] ??
           e.message ??
           'Failed to update categories';
       throw Exception(msg);
@@ -71,11 +98,11 @@ class OnboardingRepository {
   Future<List<String>> getUserCategories() async {
     try {
       final response = await _dio.get('/api/categories/mine');
-      final rawList =
-          response.data['data']['categories'] as List<dynamic>;
+      final rawList = response.data['data']['categories'] as List<dynamic>;
       return rawList.map((item) => item['id'] as String).toList();
     } on DioException catch (e) {
-      final msg = e.response?.data?['error'] ??
+      final msg =
+          e.response?.data?['error'] ??
           e.message ??
           'Failed to fetch user categories';
       throw Exception(msg);
@@ -106,11 +133,7 @@ class OnboardingRepository {
       final data = response.data['data'] as Map<String, dynamic>;
       return data;
     } catch (_) {
-      return {
-        'showable': false,
-        'similarCount': null,
-        'totalUsers': 0,
-      };
+      return {'showable': false, 'similarCount': null, 'totalUsers': 0};
     }
   }
 }

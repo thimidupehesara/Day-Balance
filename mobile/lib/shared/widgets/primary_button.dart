@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
@@ -9,6 +10,10 @@ class AppPrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
   final bool isEnabled;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final Color? disabledBackgroundColor;
+  final Color? disabledForegroundColor;
 
   const AppPrimaryButton({
     super.key,
@@ -17,42 +22,57 @@ class AppPrimaryButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.isEnabled = true,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.disabledBackgroundColor,
+    this.disabledForegroundColor,
   }) : text = label ?? text ?? '';
 
   @override
   Widget build(BuildContext context) {
     final bool canPress = isEnabled && !isLoading && onPressed != null;
 
-    return SizedBox(
-      height: 48,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: canPress ? onPressed : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primarySage,
-          foregroundColor: AppColors.white,
-          disabledBackgroundColor: AppColors.disabled,
-          disabledForegroundColor: AppColors.secondary,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(100),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: canPress ? onPressed : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor ?? AppColors.primarySage,
+            foregroundColor: foregroundColor ?? AppColors.textOnPrimary,
+            disabledBackgroundColor:
+                disabledBackgroundColor ?? AppColors.disabled,
+            disabledForegroundColor:
+                disabledForegroundColor ?? AppColors.secondary,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(100),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+          child: isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.secondary,
+                    ),
+                  ),
+                )
+              : Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.button.copyWith(
+                    color: canPress
+                        ? foregroundColor ?? AppColors.textOnPrimary
+                        : disabledForegroundColor ?? AppColors.secondary,
+                  ),
                 ),
-              )
-            : Text(
-                text,
-                style: AppTextStyles.button,
-              ),
+        ),
       ),
     );
   }
