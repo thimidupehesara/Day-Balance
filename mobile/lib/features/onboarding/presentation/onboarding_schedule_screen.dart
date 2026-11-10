@@ -160,9 +160,11 @@ class OnboardingScheduleScreen extends ConsumerWidget {
                                 color: AppColors.secondary,
                               ),
                               const SizedBox(width: 8),
-                              const Text(
-                                'Hours awake',
-                                style: AppTextStyles.body14,
+                              const Flexible(
+                                child: Text(
+                                  'Hours awake',
+                                  style: AppTextStyles.body14,
+                                ),
                               ),
                             ],
                           ),

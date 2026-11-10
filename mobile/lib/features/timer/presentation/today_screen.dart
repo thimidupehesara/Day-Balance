@@ -108,31 +108,33 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Total hours left',
-                                style: TextStyle(
-                                  fontFamily: AppTextStyles.fontFamily,
-                                  color: AppColors.secondary,
-                                  fontSize: 12,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Total hours left',
+                                  style: TextStyle(
+                                    fontFamily: AppTextStyles.fontFamily,
+                                    color: AppColors.secondary,
+                                    fontSize: 12,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                TodayTimerState.formatDuration(
-                                  state.totalHoursLeftSeconds,
+                                const SizedBox(height: 2),
+                                Text(
+                                  TodayTimerState.formatDuration(
+                                    state.totalHoursLeftSeconds,
+                                  ),
+                                  style: const TextStyle(
+                                    fontFamily: AppTextStyles.fontFamily,
+                                    color: AppColors.primarySage,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: -0.5,
+                                  ),
                                 ),
-                                style: const TextStyle(
-                                  fontFamily: AppTextStyles.fontFamily,
-                                  color: AppColors.primarySage,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
 
                           // Edit Plan Button (only when plan exists)
@@ -434,65 +436,37 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           // Today (Active)
-          Semantics(
-            button: true,
-            selected: true,
-            label: 'Today tab',
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 64,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AppColors.primarySage.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    AppIcons.time,
-                    color: AppColors.primarySage,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Today',
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    color: AppColors.primarySage,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // History (Inactive placeholder)
-          Semantics(
-            button: true,
-            label: 'History tab',
-            child: InkWell(
-              onTap: () => context.go('/summary'),
-              child: const Column(
+          Expanded(
+            child: Semantics(
+              button: true,
+              selected: true,
+              label: 'Today tab',
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(
+                  Container(
+                    width: 64,
                     height: 32,
-                    child: Icon(
-                      Icons.history_rounded,
-                      color: AppColors.secondary,
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySage.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      AppIcons.time,
+                      color: AppColors.primarySage,
                       size: 20,
                     ),
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    'History',
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Today',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
-                      color: AppColors.secondary,
+                      color: AppColors.primarySage,
                       fontSize: 12,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
@@ -500,35 +474,72 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
             ),
           ),
 
+          // History (Inactive placeholder)
+          Expanded(
+            child: Semantics(
+              button: true,
+              label: 'History tab',
+              child: InkWell(
+                onTap: () => context.go('/summary'),
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 32,
+                      child: Icon(
+                        Icons.history_rounded,
+                        color: AppColors.secondary,
+                        size: 20,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'History',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        color: AppColors.secondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           // Profile / Settings (Inactive placeholder)
-          Semantics(
-            button: true,
-            label: 'Profile tab',
-            child: InkWell(
-              onTap: () {
-                // Placeholder
-              },
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    height: 32,
-                    child: Icon(
-                      Icons.person_outline_rounded,
-                      color: AppColors.secondary,
-                      size: 20,
+          Expanded(
+            child: Semantics(
+              button: true,
+              label: 'Profile tab',
+              child: InkWell(
+                onTap: () {
+                  // Placeholder
+                },
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 32,
+                      child: Icon(
+                        Icons.person_outline_rounded,
+                        color: AppColors.secondary,
+                        size: 20,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Profile',
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      color: AppColors.secondary,
-                      fontSize: 12,
+                    SizedBox(height: 4),
+                    Text(
+                      'Profile',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        color: AppColors.secondary,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

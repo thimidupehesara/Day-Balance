@@ -187,32 +187,34 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Semantics(
-                      button: true,
-                      label: 'End session',
-                      child: TextButton(
-                        onPressed: () async {
-                          if (isRunning) {
-                            await controller.pauseTimer();
-                          }
-                          if (context.mounted) {
-                            context.go('/home');
-                          }
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 8,
+                    Flexible(
+                      child: Semantics(
+                        button: true,
+                        label: 'End session',
+                        child: TextButton(
+                          onPressed: () async {
+                            if (isRunning) {
+                              await controller.pauseTimer();
+                            }
+                            if (context.mounted) {
+                              context.go('/home');
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
+                            minimumSize: const Size(48, 48),
                           ),
-                          minimumSize: const Size(48, 48),
-                        ),
-                        child: const Text(
-                          'End session',
-                          style: TextStyle(
-                            fontFamily: AppTextStyles.fontFamily,
-                            color: AppColors.primarySage,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                          child: const Text(
+                            'End session',
+                            style: TextStyle(
+                              fontFamily: AppTextStyles.fontFamily,
+                              color: AppColors.primarySage,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -230,13 +232,15 @@ class _ActiveTimerScreenState extends ConsumerState<ActiveTimerScreen> {
                       color: AppColors.text,
                     ),
                     const SizedBox(width: 10),
-                    Text(
-                      currentItem.categoryName,
-                      style: const TextStyle(
-                        fontFamily: AppTextStyles.fontFamily,
-                        color: AppColors.text,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
+                    Flexible(
+                      child: Text(
+                        currentItem.categoryName,
+                        style: const TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
+                          color: AppColors.text,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
