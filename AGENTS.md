@@ -10,7 +10,7 @@ Daily time-budgeting app: Flutter in `mobile/`; Node.js, Express, TypeScript and
 - Run `adb -s <deviceId> reverse tcp:3000 tcp:3000`, then in `mobile/` run `flutter run -d <deviceId> --dart-define=API_BASE_URL=http://localhost:3000`.
 
 ## Figma
-- Before building or changing a screen, find its row in `design/FIGMA_LINKS.md`, look at the PNG and read the `.dart` export in `design/exports/`.
+- Before building or changing a screen, find its row in `design/FIGMA_LINKS.md` and review its PNG in `design/exports/png/`.
 - Build cleanly with theme tokens in `mobile/lib/core/theme` and shared widgets in `mobile/lib/shared/widgets`; make layouts responsive.
 - Never paste exported code, import from `/design`, or edit `/design`. Do not use the Figma MCP.
 - If no design exists, build from the user's written spec and flag it in the report.

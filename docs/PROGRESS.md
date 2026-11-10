@@ -79,6 +79,7 @@
 ---
 
 ## Next Steps
+- Use the refreshed evening-theme PNGs in `design/exports/png/` for redesigned screens.
 - Edit plan screen (12)
 - End of day summary screen (13)
 - History week screen (14)
