@@ -1,155 +1,116 @@
-# Day-Balance
+<div align="center">
+  <img src="mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="88" alt="Day-Balance app icon">
 
-A daily time-budgeting app for students and heavy workers. Plan your day by assigning hours to broad categories, then run countdown timers to stay on track.
+  <h1>Day-Balance</h1>
+  <p><strong>Give your day a time budget.</strong></p>
+  <p>Plan the hours you have, focus on one thing at a time, and see where your day went.</p>
+  <p><a href="#screens">Screens</a> · <a href="#tech-stack">Tech stack</a> · <a href="#run-locally">Run locally</a> · <a href="#project-structure">Project structure</a></p>
+</div>
 
-## Architecture
+## How it works
 
-```
-day-balance/
-├── mobile/          Flutter app (Android-first, iOS later)
-├── backend/         Node.js + Express + TypeScript REST API
-├── docs/            Handoff documentation for AI continuity
-├── design/          Figma exports (PNG & Dart), assets, tokens & links
-│   ├── exports/     CodeTea Flutter dart exports & PNG screen previews
-│   ├── assets/      Icons, illustrations & logos
-│   ├── DESIGN_TOKENS.md
-│   └── FIGMA_LINKS.md
-├── .agents/         Agent rules and custom skills
-└── AGENTS.md        AI continuation protocol
-```
+1. **Set your rhythm.** Enter your wake-up time, bedtime, and daily routines. Day-Balance calculates the time left to plan.
+2. **Make a plan.** Assign time to categories such as Academic, Career, or Rest. You can also create private categories with a name, color, and optional description.
+3. **Start a timer.** Focus on one category, pause or switch when plans change, and see when you go over your time budget.
+4. **Review your day.** Compare planned and actual time in the daily summary.
 
-## Tech Stack
+For example, if you're awake for **16 hours** and your routines take **2 hours**, you have **14 hours** to plan.
 
-| Layer | Technology |
-|-------|-----------|
-| Mobile | Flutter 3.29.0, Dart 3.7.0, Material 3 |
-| State | flutter_riverpod |
-| Navigation | go_router |
-| HTTP | dio (with JWT interceptor) |
-| Token Storage | flutter_secure_storage |
-| Notifications | flutter_local_notifications + timezone |
-| Backend | Node.js 22, Express 5, TypeScript (strict) |
-| Database | PostgreSQL on Neon |
-| ORM | Drizzle ORM + drizzle-kit |
-| Validation | zod |
-| Auth | JWT (access + refresh tokens), argon2 hashing |
-| Security | helmet, cors, express-rate-limit |
+## Screens
 
-## Getting Started
+These previews are from the project's Figma exports. The Flutter app uses the newer evening theme, so its colors and some details differ.
 
-### Prerequisites
-- Flutter SDK 3.29.0 (stable)
-- Node.js 22+
-- A [Neon](https://neon.tech) PostgreSQL database
-- Android Studio / emulator (or physical device)
+| Set your schedule | Plan your day | Start a timer |
+| :---: | :---: | :---: |
+| <img src="design/exports/png/04_onboarding_schedule.png" width="215" alt="Onboarding screen with wake-up and bedtime fields"> | <img src="design/exports/png/08_daily_planning.png" width="215" alt="Daily plan with time assigned to categories"> | <img src="design/exports/png/10_active_timer.png" width="215" alt="Active focus timer with a circular countdown"> |
 
-### Backend Setup
+The app's onboarding includes a sun and moon animation while your settings are saved. See the [design index](design/FIGMA_LINKS.md) for more screen previews.
+
+## Tech stack
+
+| Part | Technology | Role |
+| --- | --- | --- |
+| Mobile | Flutter **3.47+**, Dart **3.13.3+** (3.x), Material 3 | Builds the app UI |
+| State and navigation | Riverpod **3.x**, GoRouter **18.x** | Manages screen state and routes |
+| API client | Dio **5.x**, Flutter Secure Storage **11.x** | Sends API requests and stores sign-in tokens |
+| API | Node.js **22** in CI, Express **5.x**, TypeScript **7.x** | Serves the REST API |
+| Database | Neon PostgreSQL, Drizzle ORM **0.45.x**, Drizzle Kit **0.31.x** | Stores data and manages the schema |
+| Validation and auth | Zod **4.x**, JWT, Argon2 | Validates inputs, manages sessions, and hashes passwords |
+
+See [mobile/pubspec.lock](mobile/pubspec.lock) and [backend/package-lock.json](backend/package-lock.json) for exact package versions.
+
+## Run locally
+
+You'll need Node.js 22, Flutter with the Dart version above, a Neon PostgreSQL database for development, and either Chrome or an Android device or emulator.
+
+### 1. Start the backend
+
+From the repository root, open a terminal:
 
 ```bash
 cd backend
 cp .env.example .env
-# Edit .env: set DATABASE_URL, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
-npm install
-npm run db:generate   # generate SQL migration files with drizzle-kit
-npm run db:migrate    # apply migrations to your Neon database
-npm run db:seed       # seed the 7 categories
-npm run dev           # start dev server on port 3000
+npm ci
 ```
 
-Database management commands:
+In PowerShell, use `Copy-Item .env.example .env` to copy the file. Fill in `DATABASE_URL`, `JWT_ACCESS_SECRET`, and `JWT_REFRESH_SECRET` in `backend/.env`. Use separate secrets for access and refresh tokens. Keep the file local. The [example file](backend/.env.example) lists the optional settings. For production, set `CORS_ORIGIN` to the trusted web client origin.
+
+For a fresh **development database**, create the schema and seed the standard categories:
+
 ```bash
-npm run db:generate   # generate migrations from src/db/schema.ts
-npm run db:migrate    # run pending migrations against Neon DB
-npm run db:push       # push schema changes directly to Neon DB (prototyping)
-npm run db:studio     # launch Drizzle Studio database viewer locally
-npm run db:seed       # populate the 7 standard categories
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+npm run dev
 ```
 
-### Mobile Setup
+The API runs at `http://localhost:3000`. Open `http://localhost:3000/health` to check that the server is responding.
+
+### 2. Start the app
+
+In a second terminal, from the repository root:
 
 ```bash
 cd mobile
 flutter pub get
-flutter analyze       # verify no lint errors
-flutter run           # run on emulator or device
+flutter devices
 ```
 
-### Mobile API Configuration & Platform Resolution
+| Where | Command |
+| --- | --- |
+| Chrome | `flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:3000` |
+| Android emulator | `flutter run -d <emulator-id>` |
+| Android phone over USB | Run `adb -s <device-id> reverse tcp:3000 tcp:3000`, then `flutter run -d <device-id> --dart-define=API_BASE_URL=http://localhost:3000` |
 
-The API base URL is configured in a single place: [`mobile/lib/core/constants/api_constants.dart`](mobile/lib/core/constants/api_constants.dart).
-- **Web (`kIsWeb`)**: Defaults to `http://localhost:3000`
-- **Android Emulator**: Defaults to `http://10.0.2.2:3000` (maps to host localhost)
-- **Physical Android Phone**: Run `adb reverse tcp:3000 tcp:3000` and pass `--dart-define=API_BASE_URL=http://localhost:3000`
+Replace the placeholders with the IDs from `flutter devices`. Enable USB debugging on a physical phone. The emulator uses `http://10.0.2.2:3000` to reach the API on your computer.
 
-#### Overriding with `--dart-define`
+## Project structure
 
-You can override the base URL for any platform or environment without editing code:
-```bash
-# Physical device with adb reverse:
-adb reverse tcp:3000 tcp:3000
-flutter run --dart-define=API_BASE_URL=http://localhost:3000
-
-# Physical device over local Wi-Fi / LAN IP:
-flutter run --dart-define=API_BASE_URL=http://192.168.1.100:3000
-
-# Web on custom port:
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:3000
+```text
+Day-Balance/
+├── mobile/           Flutter app and widget tests
+│   └── lib/
+│       ├── core/     Theme, routes, and API client
+│       ├── features/ Auth, onboarding, planning, timer, and summary
+│       └── shared/   Reusable widgets
+├── backend/          Express API and server tests
+│   └── src/
+│       ├── config/   Environment settings
+│       ├── db/       Database schema and seed data
+│       └── modules/  API routes and feature logic
+├── design/           Figma references and screen exports
+├── docs/             Project progress and feature notes
+├── .github/          CI workflows
+└── AGENTS.md         Repository working instructions
 ```
 
-### Environment Variables
+## Checks
 
-Copy `backend/.env.example` to `backend/.env` and fill in:
+| From | Commands |
+| --- | --- |
+| `mobile/` | `flutter analyze`, `flutter test`, `flutter build apk --debug` |
+| `backend/` | `npm run lint`, `npm test`, `npm run build` |
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | Neon PostgreSQL connection string |
-| `JWT_ACCESS_SECRET` | Random secret for signing access tokens |
-| `JWT_REFRESH_SECRET` | Random secret for signing refresh tokens |
-| `PORT` | Server port (default: 3000) |
-| `NODE_ENV` | `development` or `production` |
-| `CORS_ORIGIN` | Allowed origins (default: `*`; must be restricted before launch) |
+The [Mobile CI workflow](.github/workflows/mobile-ci.yml) uploads a debug APK when the build succeeds. The [Backend CI workflow](.github/workflows/backend-ci.yml) runs unit tests without a live database. The separate `npm run test:live` command needs a running API and a configured test database.
 
-> **Security Note**: `CORS_ORIGIN` is configured to allow all origins (`*`) during development. Before launching to production, `CORS_ORIGIN` must be restricted to trusted client domains/origins.
-
-## Project Structure
-
-### Mobile (`/mobile/lib/`)
-```
-core/
-  constants/     API URLs, category definitions
-  network/       Dio client with auth interceptor
-  router/        GoRouter configuration
-  theme/         Colors, text styles, Material theme
-features/
-  auth/          Login, register, logout
-  onboarding/    Schedule, routine, category selection
-  planning/      Daily plan creation
-  timer/         Countdown timers per category
-  summary/       End-of-day planned vs actual
-  settings/      User preferences
-shared/
-  widgets/       Reusable UI components
-```
-
-### Backend (`/backend/src/`)
-```
-config/          Environment validation (zod)
-db/              Drizzle schema, connection, seed
-middleware/      Auth (JWT), error handler
-modules/
-  auth/          Register, login, refresh, logout
-  users/         Profile, onboarding fields
-  categories/    List categories, user selection
-  plans/         Daily plans, plan items
-  timer/         Start/pause/resume timers
-  health/        GET /health
-utils/           Shared helpers
-```
-
-## Documentation
-
-See `/docs/PROGRESS.md` for the full index of feature documentation and implementation status. Each feature has its own markdown file following the handoff template.
-
-## License
-
-See [LICENSE](LICENSE).
+See [project progress](docs/PROGRESS.md) for feature status and [LICENSE](LICENSE) for license terms.
