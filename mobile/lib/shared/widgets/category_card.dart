@@ -225,23 +225,25 @@ class CategoryTimerCard extends StatelessWidget {
           ),
 
           // Remaining time
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                remainingText,
-                style: const TextStyle(
-                  color: AppColors.text,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  fontFeatures: [FontFeature.tabularFigures()],
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  remainingText,
+                  style: const TextStyle(
+                    color: AppColors.text,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
                 ),
-              ),
-              const Text(
-                'remaining',
-                style: TextStyle(color: AppColors.secondary, fontSize: 10),
-              ),
-            ],
+                const Text(
+                  'remaining',
+                  style: TextStyle(color: AppColors.secondary, fontSize: 10),
+                ),
+              ],
+            ),
           ),
           const SizedBox(width: 14),
 

@@ -90,15 +90,17 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
                               },
                             ),
                             const SizedBox(width: 8),
-                            const Expanded(child: Text(
-                              'Your day, in balance',
-                              style: TextStyle(
-                                fontFamily: AppTextStyles.fontFamily,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.text,
+                            const Expanded(
+                              child: Text(
+                                'Your day, in balance',
+                                style: TextStyle(
+                                  fontFamily: AppTextStyles.fontFamily,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.text,
+                                ),
                               ),
-                            )),
+                            ),
                           ],
                         ),
                       ),
@@ -261,12 +263,14 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
           ),
         ),
         const SizedBox(width: 8),
-        const Text(
-          'Planned',
-          style: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            color: AppColors.secondary,
-            fontSize: 12,
+        const Flexible(
+          child: Text(
+            'Planned',
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              color: AppColors.secondary,
+              fontSize: 12,
+            ),
           ),
         ),
         const SizedBox(width: 20),
@@ -279,12 +283,14 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
           ),
         ),
         const SizedBox(width: 8),
-        const Text(
-          'Actual',
-          style: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            color: AppColors.secondary,
-            fontSize: 12,
+        const Flexible(
+          child: Text(
+            'Actual',
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              color: AppColors.secondary,
+              fontSize: 12,
+            ),
           ),
         ),
       ],
@@ -324,21 +330,25 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    cat.categoryName,
-                    style: const TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.text,
+                  Flexible(
+                    child: Text(
+                      cat.categoryName,
+                      style: const TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.text,
+                      ),
                     ),
                   ),
-                  Text(
-                    '$actualStr / $plannedStr',
-                    style: const TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: 11,
-                      color: AppColors.secondary,
+                  Flexible(
+                    child: Text(
+                      '$actualStr / $plannedStr',
+                      style: const TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: 11,
+                        color: AppColors.secondary,
+                      ),
                     ),
                   ),
                 ],
@@ -472,29 +482,64 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           // Today Tab (Inactive)
-          Semantics(
-            button: true,
-            label: 'Today tab',
-            child: InkWell(
-              onTap: () => context.go('/today'),
+          Expanded(
+            child: Semantics(
+              button: true,
+              label: 'Today tab',
+              child: InkWell(
+                onTap: () => context.go('/today'),
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 32,
+                      child: Icon(
+                        Icons.wb_sunny_outlined,
+                        color: AppColors.secondary,
+                        size: 20,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Today',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        color: AppColors.secondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // History / Summary Tab (Active)
+          Expanded(
+            child: Semantics(
+              button: true,
+              label: 'History tab',
               child: const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
                     height: 32,
                     child: Icon(
-                      Icons.wb_sunny_outlined,
-                      color: AppColors.secondary,
+                      Icons.history_rounded,
+                      color: AppColors.primarySage,
                       size: 20,
                     ),
                   ),
                   SizedBox(height: 4),
                   Text(
-                    'Today',
+                    'History',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
-                      color: AppColors.secondary,
+                      color: AppColors.primarySage,
                       fontSize: 12,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
@@ -502,64 +547,38 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
             ),
           ),
 
-          // History / Summary Tab (Active)
-          Semantics(
-            button: true,
-            label: 'History tab',
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  height: 32,
-                  child: Icon(
-                    Icons.history_rounded,
-                    color: AppColors.primarySage,
-                    size: 20,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'History',
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    color: AppColors.primarySage,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
           // Profile Tab (Inactive)
-          Semantics(
-            button: true,
-            label: 'Profile tab',
-            child: InkWell(
-              onTap: () {
-                // Profile placeholder
-              },
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    height: 32,
-                    child: Icon(
-                      Icons.person_outline_rounded,
-                      color: AppColors.secondary,
-                      size: 20,
+          Expanded(
+            child: Semantics(
+              button: true,
+              label: 'Profile tab',
+              child: InkWell(
+                onTap: () {
+                  // Profile placeholder
+                },
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 32,
+                      child: Icon(
+                        Icons.person_outline_rounded,
+                        color: AppColors.secondary,
+                        size: 20,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Profile',
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      color: AppColors.secondary,
-                      fontSize: 12,
+                    SizedBox(height: 4),
+                    Text(
+                      'Profile',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        color: AppColors.secondary,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
