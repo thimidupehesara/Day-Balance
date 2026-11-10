@@ -22,7 +22,7 @@ These previews are from the project's Figma exports. The Flutter app uses the ne
 
 | Set your schedule | Plan your day | Start a timer |
 | :---: | :---: | :---: |
-| <img src="design/exports/png/01_welcome.png" width="215" alt="Onboarding screen with wake-up and bedtime fields"> | <img src="design/exports/png/04_onboarding_schedule.png" width="215" alt="Daily plan with time assigned to categories"> | <img src="design/exports/png/10_active_timer.png" width="215" alt="Active focus timer with a circular countdown"> |
+| <img src="design/exports/png/10_active_timer.png" width="215" alt="Onboarding screen with wake-up and bedtime fields"> | <img src="design/exports/png/04_onboarding_schedule.png" width="215" alt="Daily plan with time assigned to categories"> | <img src="design/exports/png/10_active_timer.png" width="215" alt="Active focus timer with a circular countdown"> |
 
 The app's onboarding includes a sun and moon animation while your settings are saved. See the [design index](design/FIGMA_LINKS.md) for more screen previews.
 
