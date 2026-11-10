@@ -1,0 +1,43 @@
+name: Update Progress Table
+
+on:
+  push:
+    branches:
+      - main # Change to your primary branch if different
+
+jobs:
+  update-table:
+    # Prevent infinite loop when action pushes back
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Append commit details to PROGRESS.md
+        run: |
+          DATE=$(date -u +"%Y-%m-%d %H:%M")
+          SHA="${{ github.sha }}"
+          SHORT_SHA="${SHA:0:7}"
+          REPO="${{ github.repository }}"
+          COMMIT_URL="https://github.com/${REPO}/commit/${SHA}"
+          AUTHOR="${{ github.actor }}"
+          # Clean commit message to avoid breaking markdown tables
+          RAW_MSG="${{ github.event.head_commit.message }}"
+          CLEAN_MSG=$(echo "$RAW_MSG" | head -n 1 | sed 's/|/-/g')
+
+          # Append the row to docs/PROGRESS.md
+          echo "| $DATE | [$SHORT_SHA]($COMMIT_URL) | @$AUTHOR | $CLEAN_MSG |" >> docs/PROGRESS.md
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/PROGRESS.md
+          git commit -m "docs: auto-update progress table [skip ci]" || exit 0
+          git push
