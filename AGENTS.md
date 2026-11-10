@@ -17,14 +17,22 @@ Daily time-budgeting app: Flutter in `mobile/`; Node.js, Express, TypeScript and
 
 ## Safety
 - Never run `DROP`, `TRUNCATE`, or `DELETE` without `WHERE`.
-- Never commit `.env` files or print secrets.
+- Never include secrets or `.env` files in commits; never print secrets.
 - Test users must use `@example.com` and be cleaned up with scoped deletion.
 - Inspect test scripts before execution; do not run database-dependent commands when database access is prohibited.
 
 ## Git
-- Use one `feature/<name>` branch per task; make small commits with useful messages. Never commit directly to `main`.
-- Stage only task changes; preserve unrelated work. Never push to `main` or run `git push`; the user pushes and merges.
-- Report the branch name for the user to push.
+- You may create branches: `feature/<short-name>` for a new feature; `fix/<short-name>` only for fixes to an already merged feature. Before merge, fixes stay on the same feature branch as commits.
+- NEVER run `git add`, `git commit`, `git push`, `git merge`, `git rebase`, `git stash`, `git reset` or `git checkout -- <file>`. The user commits and pushes.
+- Never work on main.
+- Branch from an up-to-date main using `git switch -c <name>`. Before switching, check `git status`; if there is unrelated uncommitted work, stop and tell the user.
+- At the end of EVERY task, print only this block (under 20 lines):
+  Branch: <name>
+  Files changed: <list, max 12 lines>
+  Commit message: <one line in the format below>
+  Push after this commit: YES or NO (YES only when a set of related commits is complete and checks pass; otherwise NO so the user can batch commits)
+  Checks: <what was run and the result, 1-3 lines>
+- Commit format: `<type>(<area>): <short summary in present tense>`. Types: feat, fix, refactor, test, docs, ci, chore. Areas: db, auth, timer, plans, categories, onboarding, mobile, ci, docs. Example: `fix(timer): update the screen before the server replies`. If multiple commits are needed, give their messages in order and list the files belonging to each.
 
 ## Quiet verification
 - Run each applicable check once per task: in `mobile/`, `flutter analyze` and `flutter test`; in `backend/`, `npx tsc --noEmit`, `npm test`, and `npm run build`.
