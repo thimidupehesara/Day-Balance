@@ -514,9 +514,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen>
               button: true,
               label: 'Profile tab',
               child: InkWell(
-                onTap: () {
-                  // Placeholder
-                },
+                onTap: () => context.go('/settings'),
                 child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

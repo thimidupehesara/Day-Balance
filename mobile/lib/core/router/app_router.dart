@@ -1,6 +1,5 @@
-import '../../shared/widgets/app_page.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/welcome_screen.dart';
@@ -17,22 +16,6 @@ import '../../features/timer/presentation/today_screen.dart';
 import '../../features/timer/presentation/active_timer_screen.dart';
 import '../../features/summary/presentation/summary_screen.dart';
 import 'app_transitions.dart';
-
-// Placeholder screens — will be replaced with real implementations
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppPage(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(title, style: Theme.of(context).textTheme.headlineMedium),
-      ),
-    );
-  }
-}
 
 /// App router configuration using go_router with smooth CustomTransitionPage transitions.
 final GoRouter appRouter = GoRouter(
@@ -147,10 +130,8 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/settings',
       name: 'settings',
-      pageBuilder: (context, state) => AppTransitions.sharedAxis(
-        state: state,
-        child: const _PlaceholderScreen(title: 'Settings'),
-      ),
+      pageBuilder: (context, state) =>
+          AppTransitions.sharedAxis(state: state, child: const ProfileScreen()),
     ),
   ],
 );

@@ -1,4 +1,16 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final timerNotificationsProvider = NotifierProvider<TimerNotifications, bool>(
+  TimerNotifications.new,
+);
+
+class TimerNotifications extends Notifier<bool> {
+  @override
+  bool build() => true;
+
+  void setEnabled(bool enabled) => state = enabled;
+}
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -9,8 +21,9 @@ class NotificationService {
   static Future<void> initialize() async {
     if (_initialized) return;
 
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -38,8 +51,7 @@ class NotificationService {
     const androidDetails = AndroidNotificationDetails(
       'timer_channel',
       'Category Timer Alerts',
-      channelDescription:
-          'Alerts when a budgeted category timer reaches zero and enters overtime',
+      channelDescription: 'Alerts when a budgeted category timer reaches zero and enters overtime',
       importance: Importance.high,
       priority: Priority.high,
       playSound: true,
