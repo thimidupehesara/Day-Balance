@@ -224,9 +224,11 @@ class TodayController extends Notifier<TodayTimerState> {
       final updatedNotified =
           Set<String>.from(state.notifiedOvertimeCategories)..add(activeItem.id);
       state = state.copyWith(notifiedOvertimeCategories: updatedNotified);
-      NotificationService.showOvertimeNotification(
-        categoryName: activeItem.categoryName,
-      );
+      if (ref.read(timerNotificationsProvider)) {
+        NotificationService.showOvertimeNotification(
+          categoryName: activeItem.categoryName,
+        );
+      }
     }
   }
 

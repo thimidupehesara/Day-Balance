@@ -553,9 +553,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen>
               button: true,
               label: 'Profile tab',
               child: InkWell(
-                onTap: () {
-                  // Profile placeholder
-                },
+                onTap: () => context.go('/settings'),
                 child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

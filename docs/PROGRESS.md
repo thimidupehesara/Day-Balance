@@ -47,7 +47,7 @@
 | [Active Timer](screens/active_timer.md) | DONE | Fullscreen focus timer with circular progress dial, overtime support, and category switcher matching Figma 10 | Verified with widget tests and live router integration |
 | [Switch Sheet](screens/switch_sheet.md) | DONE | Bottom modal sheet confirming switch between active timer and another planned category matching Figma 11 | Verified with widget tests and Today/Active Timer integration |
 | [Summary Screen](screens/summary.md) | PLANNED | End-of-day planned vs actual | Not started |
-| [Settings Screen](screens/settings.md) | PLANNED | User preferences, logout, delete account | Not started |
+| Profile screen | DONE | Profile details, session timer alerts, and logout | Profile editing and account changes pending |
 | Redesigned page layout | DONE | Schedule, Today, Active Timer, and Summary text fits on narrow screens | Verified at 320 px with 150% text in the redesign layout test |
 
 ## Mobile Components
